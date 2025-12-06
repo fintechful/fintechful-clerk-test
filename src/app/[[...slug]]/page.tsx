@@ -1,11 +1,24 @@
 // src/app/[[...slug]]/page.tsx
-import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
+import { SignedIn, UserButton } from '@clerk/nextjs';
 
 export default function SubdomainPage() {
+  // This works on Vercel preview AND on your real domain
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  const subdomain = hostname.split('.')[0];
+  
+  // Extract the first part before the main domain
+  const parts = hostname.split('.');
+  let subdomain = '';
 
-  const isMainDomain = ['fintechful-clerk-test', 'localhost', 'fintechful', 'www'].includes(subdomain);
+  if (hostname.includes('vercel.app')) {
+    // Vercel preview: jane--fintechful-clerk-test.vercel.app
+    → jane
+    subdomain = parts[0].split('--')[0];
+  } else {
+    // Real domain: jane.fintechful.com → jane
+    subdomain = parts.length > 2 ? parts[0] : '';
+  }
+
+  const isMainDomain = !subdomain || ['www', 'fintechful', 'localhost'].includes(subdomain);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
@@ -21,8 +34,8 @@ export default function SubdomainPage() {
       <main className="max-w-4xl mx-auto p-12 text-center">
         {isMainDomain ? (
           <>
-            <h2 className="text-5xl font-bold mb-8">Welcome to the main site</h2>
-            <p className="text-2xl">Visit any subdomain → personalized dashboard</p>
+            <h2 className="text-5xl font-bold mb-8">Main Site Active</h2>
+            <p className="text-2xl">Try any subdomain → it will personalize instantly</p>
           </>
         ) : (
           <>
