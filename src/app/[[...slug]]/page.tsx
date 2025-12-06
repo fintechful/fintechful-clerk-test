@@ -2,16 +2,12 @@
 import { SignedIn, UserButton } from '@clerk/nextjs';
 
 export default function SubdomainPage() {
-  // This works on Vercel preview AND on your real domain
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  
-  // Extract the first part before the main domain
   const parts = hostname.split('.');
   let subdomain = '';
 
   if (hostname.includes('vercel.app')) {
-    // Vercel preview: jane--fintechful-clerk-test.vercel.app
-    → jane
+    // Vercel preview: jane--fintechful-clerk-test.vercel.app → jane
     subdomain = parts[0].split('--')[0];
   } else {
     // Real domain: jane.fintechful.com → jane
