@@ -1,49 +1,35 @@
 // src/app/page.tsx
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from '@clerk/nextjs';
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100">
-      {/* Header moved to layout.tsx — keep it empty here */}
-      
-      <main className="flex flex-col items-center justify-center min-h-screen text-center px-8 -mt-20">
-        <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <main className="container mx-auto px-6 py-24 text-center">
+        <h1 className="text-5xl md:text-7xl font-black text-gray-900 mb-8">
           FinTechful Agent Portal
         </h1>
-        <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mb-12">
-          Multi-tenant Clerk auth is now 100% working.<br />
-          Week 1 of the 12-week MVP is officially complete.
+        <p className="text-xl md:text-2xl text-gray-700 max-w-4xl mx-auto mb-12">
+          One dashboard. Unlimited SMB clients. 50% commissions on every fintech close.
         </p>
 
         <SignedOut>
-          <div className="flex gap-6">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <SignInButton mode="modal">
-              <button className="text-lg underline hover:no-underline">
-                Sign In
-              </button>
+              <button className="text-lg underline hover:no-underline">Already have access? Sign in</button>
             </SignInButton>
             <SignUpButton mode="modal">
-              <button className="bg-white text-purple-600 font-bold text-lg px-8 py-4 rounded-full hover:bg-gray-100 shadow-lg transition">
-                Get Started – $1,495
+              <button className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xl px-10 py-5 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition">
+                Join as Agent – $1,495 one-time + $295/mo
               </button>
             </SignUpButton>
           </div>
         </SignedOut>
 
         <SignedIn>
-          <div className="flex flex-col items-center gap-6">
+          <div className="flex flex-col items-center gap-8">
             <UserButton afterSignOutUrl="/" />
-            <a
-              href="/dashboard"
-              className="text-2xl font-semibold text-purple-700 hover:text-purple-900 underline"
-            >
-              Go to Agent Dashboard →
+            <a href="/dashboard" className="text-3xl font-bold text-purple-700 hover:text-purple-900">
+              → Open Your Agent Dashboard
             </a>
           </div>
         </SignedIn>
