@@ -11,6 +11,14 @@ export default function SubdomainPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        {/* DEBUG BLOCK — DELETE LATER */}
+      <div className="mb-12 p-6 bg-yellow-100 border-4 border-yellow-600 rounded-xl text-center">
+        <p className="text-xl font-bold">DEBUG INFO:</p>
+        <p>Full hostname: <code className="bg-white px-3 py-1 rounded">{hostname}</code></p>
+        <p>Extracted subdomain: <code className="bg-white px-3 py-1 rounded">"{subdomain}"</code></p>
+        <p>parts.length: {parts.length}</p>
+      </div>
+      {/* END DEBUG */}
       <header className="flex justify-between items-center p-8 bg-white shadow-sm">
         <h1 className="text-3xl font-black text-purple-700">
           {isMainDomain ? 'FinTechful Agent Portal' : `${subdomain.toUpperCase()}'s Agency`}
