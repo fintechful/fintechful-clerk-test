@@ -14,9 +14,9 @@ export default function Home() {
 
         <SignedOut>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <SignInButton mode="modal">
+            <!-- <SignInButton mode="modal">
               <button className="text-lg underline hover:no-underline">Already have access? Sign in</button>
-            </SignInButton>
+            </SignInButton> -->
             <SignUpButton mode="modal">
               <button className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xl px-10 py-5 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition">
                 Join as Agent – $1,495 one-time + $295/mo
