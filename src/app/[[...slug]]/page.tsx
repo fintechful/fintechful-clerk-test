@@ -2,21 +2,11 @@
 import { SignedIn, UserButton } from '@clerk/nextjs';
 
 export default function SubdomainPage() {
-  // Get full hostname (works on Vercel preview + real domain)
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  
-  let subdomain = '';
+  const parts = hostname.split('.');
+  const subdomain = parts.length > 2 ? parts[0] : '';
 
-  if (hostname.includes('vercel.app')) {
-    // Vercel preview: jane--fintechful-clerk-test.vercel.app
-    const parts = hostname.split('--');
-    subdomain = parts[0]; // "jane"
-  } else if (hostname.endsWith('fintechful.com')) {
-    // Real domain: jane.fintechful.com or fintechful.com
-    const parts = hostname.split('.');
-    subdomain = parts.length > 2 ? parts[0] : '';
-  }
-
+  // Only these are considered "main" domains
   const isMainDomain = !subdomain || ['www', 'fintechful', 'localhost'].includes(subdomain);
 
   return (
@@ -34,7 +24,7 @@ export default function SubdomainPage() {
         {isMainDomain ? (
           <>
             <h2 className="text-5xl font-bold mb-8">Main Site Active</h2>
-            <p className="text-2xl">Visit any subdomain → it personalizes instantly</p>
+            <p className="text-2xl">Visit any subdomain → personalized instantly</p>
           </>
         ) : (
           <>
@@ -51,7 +41,7 @@ export default function SubdomainPage() {
               href="/dashboard"
               className="inline-block bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-2xl font-bold px-12 py-6 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition"
             >
-              Open Your Dashboard
+              Open Your Dashboard →
             </a>
           </>
         )}
