@@ -1,24 +1,28 @@
 // src/app/[[...slug]]/page.tsx
+'use client';
+
+import { useEffect, useState } from 'react';
 import { SignedIn, UserButton } from '@clerk/nextjs';
 
 export default function SubdomainPage() {
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  const parts = hostname.split('.');
-  const subdomain = parts.length > 2 ? parts[0] : '';
+  const [subdomain, setSubdomain] = useState<string>('');
 
-  // Only these are considered "main" domains
-  const isMainDomain = !subdomain || ['www', 'fintechful', 'localhost'].includes(subdomain);
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    const parts = hostname.split('.');
+    const extracted = parts.length > 2 ? parts[0].toLowerCase() : '';
+    setSubdomain(extracted);
+  }, []);
+
+  const isMainDomain =
+    !subdomain ||
+    subdomain === 'www' ||
+    subdomain === 'fintechful' ||
+    subdomain === 'localhost' ||
+    window.location.hostname.includes('vercel.app');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-        {/* DEBUG BLOCK — DELETE LATER */}
-      <div className="mb-12 p-6 bg-yellow-100 border-4 border-yellow-600 rounded-xl text-center">
-        <p className="text-xl font-bold">DEBUG INFO:</p>
-        <p>Full hostname: <code className="bg-white px-3 py-1 rounded">{hostname}</code></p>
-        <p>Extracted subdomain: <code className="bg-white px-3 py-1 rounded">"{subdomain}"</code></p>
-        <p>parts.length: {parts.length}</p>
-      </div>
-      {/* END DEBUG */}
       <header className="flex justify-between items-center p-8 bg-white shadow-sm">
         <h1 className="text-3xl font-black text-purple-700">
           {isMainDomain ? 'FinTechful Agent Portal' : `${subdomain.toUpperCase()}'s Agency`}
@@ -32,7 +36,7 @@ export default function SubdomainPage() {
         {isMainDomain ? (
           <>
             <h2 className="text-5xl font-bold mb-8">Main Site Active</h2>
-            <p className="text-2xl">Visit any subdomain → personalized instantly</p>
+            <p className="text-2xl">Visit any subdomain → it personalizes instantly</p>
           </>
         ) : (
           <>
