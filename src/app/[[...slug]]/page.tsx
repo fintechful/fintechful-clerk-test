@@ -50,9 +50,9 @@ export default function AgentSite() {
         <div className="absolute inset-0 bg-black opacity-50"></div>
         <div className="relative max-w-6xl mx-auto px-8 h-full flex items-center">
           <div className="flex items-center gap-10">
-            {profile.headshot_url && (
+            {profile.avatar_url && (
               <img
-                src={profile.headshot_url}
+                src={profile.avatar_url}
                 alt={profile.full_name}
                 className="w-48 h-48 rounded-full object-cover border-8 border-white shadow-2xl"
               />
