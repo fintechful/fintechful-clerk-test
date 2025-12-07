@@ -30,57 +30,75 @@ export default function AgentSite() {
       });
   }, []);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white text-2xl">Loading...</div>;
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center text-center p-8">
-        <div>
-          <h1 className="text-6xl font-black mb-8">FinTechful Agent Network</h1>
-          <p className="text-2xl">Visit any agent subdomain to get started</p>
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-pink-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-6xl md:text-8xl font-black mb-8">FinTechful</h1>
+          <p className="text-2xl">Agent Network — Visit any subdomain</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-6xl mx-auto px-8 py-6 flex justify-between items-center">
-          <div className="flex items-center gap-6">
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* Hero Header */}
+      <header className="relative h-96 bg-gradient-to-br from-purple-800 to-indigo-900 overflow-hidden">
+        <div className="absolute inset-0 bg-black opacity-50"></div>
+        <div className="relative max-w-6xl mx-auto px-8 h-full flex items-center">
+          <div className="flex items-center gap-10">
             {profile.headshot_url && (
-              <img src={profile.headshot_url} alt={profile.full_name} className="w-24 h-24 rounded-full object-cover border-4 border-purple-600" />
+              <img
+                src={profile.headshot_url}
+                alt={profile.full_name}
+                className="w-48 h-48 rounded-full object-cover border-8 border-white shadow-2xl"
+              />
             )}
             <div>
-              <h1 className="text-4xl font-bold">{profile.full_name}</h1>
-              <p className="text-xl text-gray-600">Licensed Financial Partner</p>
+              <h1 className="text-5xl md:text-7xl font-black mb-4">
+                {profile.full_name}
+              </h1>
+              <p className="text-2xl opacity-90">Licensed Financial Partner</p>
             </div>
           </div>
-          <SignedIn>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-12 text-center">
-        <h2 className="text-5xl font-extrabold mb-8">
-          Get Your Free Financial Review with {profile.full_name.split(' ')[0]}
+      {/* Main CTA Section */}
+      <main className="max-w-4xl mx-auto px-8 py-20 text-center">
+        <h2 className="text-4xl md:text-6xl font-bold mb-10">
+          Ready to Grow Your Business?
         </h2>
-        <p className="text-2xl mb-12">
-          {profile.bio}
+        <p className="text-2xl mb-12 leading-relaxed">
+          Work with {profile.full_name.split(' ')[0]} to unlock funding, build business credit,
+          and scale faster than ever.
         </p>
+
         <a
           href="https://calendly.com/demo"
-          className="inline-block bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-3xl font-bold px-16 py-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition"
+          className="inline-block bg-gradient-to-r from-pink-500 to-purple-600 text-white text-3xl font-black px-20 py-8 rounded-3xl hover:shadow-2xl transform hover:scale-105 transition duration-300"
         >
-          Book Free Consultation →
+          Book Your Free Strategy Call
         </a>
+
         {profile.phone && (
-          <p className="mt-10 text-2xl">
-            Or call directly: <strong>{profile.phone}</strong>
+          <p className="mt-12 text-2xl">
+            Or call now: <strong className="text-pink-400">{profile.phone}</strong>
           </p>
         )}
       </main>
+
+      {/* Private Dashboard Link */}
+      <SignedIn>
+        <div className="text-center py-12">
+          <a href="/dashboard" className="text-pink-400 text-xl underline hover:text-pink-300">
+            → Agent Dashboard (private)
+          </a>
+        </div>
+      </SignedIn>
     </div>
   );
 }
