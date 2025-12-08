@@ -8,6 +8,7 @@ import {
 } from '@clerk/nextjs';
 import './globals.css';
 import { Toaster } from 'sonner';
+import { TOASTER_TEMPLATE } from '@/components/ui/toast'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="p-10">{children}</main>
 
           <Toaster position="top-center" richColors />
+          {TOASTER_TEMPLATE}
         </body>
       </html>
     </ClerkProvider>

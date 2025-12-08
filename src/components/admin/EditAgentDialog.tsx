@@ -9,16 +9,16 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/components/ui/use-toast';
 
 type Agent = {
   clerk_user_id: string;
   full_name: string;
-  email?: string | null;
-  phone?: string | null;
-  tagline?: string | null;
-  bio?: string | null;
-  avatar_url?: string | null;
+  email?: string;
+  phone?: string;
+  tagline?: string;
+  bio?: string;
+  avatar_url?: string;
 };
 
 type Props = {
@@ -30,6 +30,7 @@ type Props = {
 
 export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }: Props) {
   const supabase = createClient();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     full_name: agent?.full_name || '',
@@ -53,11 +54,11 @@ export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }
       .upload(filePath, file, { upsert: true });
 
     if (error) {
-      toast.error('Upload failed: ' + error.message);
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
     } else {
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
       setForm({ ...form, avatar_url: publicUrl });
-      toast.success('Photo updated!');
+      toast({ title: 'Success', description: 'Photo updated!' });
     }
     setLoading(false);
   };
@@ -70,9 +71,9 @@ export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }
       .eq('clerk_user_id', agent!.clerk_user_id);
 
     if (error) {
-      toast.error('Save failed: ' + error.message);
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
-      toast.success('Agent updated!');
+      toast({ title: 'Success', description: 'Agent updated!' });
       onSuccess();
       onOpenChange(false);
     }
@@ -113,7 +114,7 @@ export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }
           <div className="md:col-span-2 space-y-4">
             <div>
               <Label>Full Name</Label>
-              <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
+              <Input value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
             </div>
             <div>
               <Label>Email</Label>
@@ -121,15 +122,15 @@ export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }
             </div>
             <div>
               <Label>Phone</Label>
-              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             </div>
             <div>
               <Label>Tagline</Label>
-              <Input placeholder="e.g. Top Closer 2024" value={form.tagline} onChange={(e) => setForm({ ...form, tagline: e.target.value })} />
+              <Input placeholder="e.g. Top Closer 2024" value={form.tagline} onChange={e => setForm({ ...form, tagline: e.target.value })} />
             </div>
             <div>
               <Label>Bio</Label>
-              <Textarea rows={4} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} />
+              <Textarea rows={4} value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} />
             </div>
           </div>
         </div>
