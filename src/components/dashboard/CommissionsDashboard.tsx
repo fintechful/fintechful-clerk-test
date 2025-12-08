@@ -17,7 +17,7 @@ const PROVIDER_NAMES: Record<string, string> = {
 };
 
 export default function CommissionsDashboard({ profile, commissions, totals }: {
-  profile: { full_name: string; avatar_url?: string; username: string };
+  profile: { full_name: string; avatar_url?: string; subdomain: string };
   commissions: any[];
   totals: { pending: number; paid: number; total: number };
 }) {
@@ -37,7 +37,7 @@ export default function CommissionsDashboard({ profile, commissions, totals }: {
         </Avatar>
         <div>
           <h1 className="text-4xl font-bold">{profile.full_name}</h1>
-          <p className="text-xl text-muted-foreground">@{profile.username}</p>
+          <p className="text-xl text-muted-foreground">@{profile.subdomain}</p>
         </div>
       </div>
 
