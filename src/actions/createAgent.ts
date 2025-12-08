@@ -2,10 +2,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createActionClient } from '@/utils/supabase/action-client';
+import { createClient } from '@/utils/supabase/server';
 
 export async function createAgent(formData: FormData) {
-  const supabase = await createActionClient();   // ← Use this one
+  const supabase = await createClient();   // ← same thing, just cleaner
 
   const full_name = formData.get('full_name') as string;
   const email = formData.get('email') as string;
