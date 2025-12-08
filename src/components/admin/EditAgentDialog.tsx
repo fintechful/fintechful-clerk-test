@@ -23,6 +23,8 @@ type Props = {
 export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }: Props) {
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
+  const isNew = !agent;
+
   const [form, setForm] = useState({
     full_name: agent?.full_name || '',
     email: agent?.email || '',
@@ -32,13 +34,19 @@ export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }
     avatar_url: agent?.avatar_url || '',
   });
 
+  // Only used when creating a new agent
+  const [newPassword] = useState(Math.random().toString(36).slice(-10) + 'A1!');
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !agent?.clerk_user_id) return;
+    if (!file) return;
+
+    const clerkUserId = agent?.clerk_user_id || form.email; // fallback for new agents
+    if (!clerkUserId) return;
 
     setLoading(true);
     const fileExt = file.name.split('.').pop();
-    const filePath = `${agent.clerk_user_id}/avatar.${fileExt}`;
+    const filePath = `${clerkUserId}/avatar.${fileExt}`;
 
     const { error } = await supabase.storage
       .from('avatars')
@@ -49,33 +57,73 @@ export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }
     } else {
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
       setForm({ ...form, avatar_url: publicUrl });
-      toast.success('Photo updated!');
+      toast.success('Photo uploaded!');
     }
     setLoading(false);
   };
 
   const saveAgent = async () => {
     setLoading(true);
-    const { error } = await supabase
-      .from('profiles')
-      .update(form)
-      .eq('clerk_user_id', agent!.clerk_user_id);
 
-    if (error) {
-      toast.error('Failed to save', { description: error.message });
-    } else {
-      toast.success('Agent updated!');
+    try {
+      if (isNew) {
+        // CREATE NEW AGENT via Clerk + Supabase profile
+        const { data: authUser, error: clerkError } = await supabase.auth.admin.createUser({
+          email: form.email,
+          password: newPassword,
+          email_confirm: true,
+          user_metadata: { full_name: form.full_name },
+        });
+
+        if (clerkError) throw clerkError;
+
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            clerk_user_id: authUser.user.id,
+            full_name: form.full_name,
+            email: form.email,
+            phone: form.phone || null,
+            tagline: form.tagline || null,
+            bio: form.bio || null,
+            avatar_url: form.avatar_url || null,
+            role: 'agent',
+          });
+
+        if (profileError) throw profileError;
+
+        toast.success('Agent created! Password sent to their email.');
+      } else {
+        // UPDATE EXISTING AGENT
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            full_name: form.full_name,
+            phone: form.phone || null,
+            tagline: form.tagline || null,
+            bio: form.bio || null,
+            avatar_url: form.avatar_url || null,
+          })
+          .eq('clerk_user_id', agent.clerk_user_id);
+
+        if (error) throw error;
+        toast.success('Agent updated!');
+      }
+
       onSuccess();
       onOpenChange(false);
+    } catch (err: any) {
+      toast.error('Operation failed', { description: err.message });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{agent ? 'Edit Agent' : 'Add New Agent'}</DialogTitle>
+          <DialogTitle>{isNew ? 'Add New Agent' : 'Edit Agent'}</DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -86,9 +134,9 @@ export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }
                 <AvatarFallback>{form.full_name[0] || 'A'}</AvatarFallback>
               </Avatar>
               <Label htmlFor="avatar" className="cursor-pointer">
-                <Button variant="outline" disabled={loading || !agent}>
+                <Button variant="outline" disabled={loading}>
                   {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                  Change Photo
+                  {form.avatar_url ? 'Change' : 'Upload'} Photo
                 </Button>
                 <input
                   id="avatar"
@@ -96,7 +144,6 @@ export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }
                   accept="image/*"
                   className="hidden"
                   onChange={handleImageUpload}
-                  disabled={!agent}
                 />
               </Label>
             </div>
@@ -107,18 +154,28 @@ export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }
               <Label>Full Name</Label>
               <Input value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
             </div>
+
             <div>
-              <Label>Email</Label>
-              <Input type="email" value={form.email} disabled />
+              <Label>Email {isNew ? '' : '(cannot change)'}</Label>
+              <Input
+                type="email"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                disabled={!isNew}
+                placeholder={isNew ? 'agent@example.com' : ''}
+              />
             </div>
+
             <div>
               <Label>Phone</Label>
               <Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             </div>
+
             <div>
               <Label>Tagline</Label>
-              <Input placeholder="e.g. Top Closer 2024" value={form.tagline} onChange={e => setForm({ ...form, tagline: e.target.value })} />
+              <Input value={form.tagline} onChange={e => setForm({ ...form, tagline: e.target.value })} />
             </div>
+
             <div>
               <Label>Bio</Label>
               <Textarea rows={4} value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} />
@@ -130,7 +187,7 @@ export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={saveAgent} disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Changes
+            {isNew ? 'Create Agent' : 'Save Changes'}
           </Button>
         </div>
       </DialogContent>
