@@ -11,16 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-
-type Agent = {
-  clerk_user_id: string;
-  full_name: string;
-  email?: string;
-  phone?: string;
-  tagline?: string;
-  bio?: string;
-  avatar_url?: string;
-};
+import type { Agent } from '@/types/agent';
 
 type Props = {
   agent: Agent | null;
