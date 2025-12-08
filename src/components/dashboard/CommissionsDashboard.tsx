@@ -16,7 +16,7 @@ const PROVIDER_NAMES: Record<string, string> = {
   hy_savings: 'HY Savings',
 };
 
-export function CommissionsDashboard({ profile, commissions, totals }: {
+export default function CommissionsDashboard({ profile, commissions, totals }: {
   profile: { full_name: string; avatar_url?: string; username: string };
   commissions: any[];
   totals: { pending: number; paid: number; total: number };
