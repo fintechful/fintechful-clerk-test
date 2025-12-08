@@ -4,23 +4,27 @@ import { redirect } from 'next/navigation';
 import CommissionsDashboard from '@/components/dashboard/CommissionsDashboard';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function CommissionsPage() {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // This is the key — use getSession, not getUser
+  const { data: { session } } = await supabase.auth.getSession();
 
-  if (!user) redirect('/sign-in');
+  if (!session?.user) {
+    redirect('/sign-in');
+  }
 
   const { data: profile } = await supabase
     .from('profiles')
     .select('clerk_user_id, full_name, username, avatar_url')
-    .eq('clerk_user_id', user.id)
+    .eq('clerk_user_id', session.user.id)
     .single();
 
-  if (!profile) redirect('/dashboard');
+  if (!profile) {
+    redirect('/dashboard');
+  }
 
   const { data: commissions } = await supabase
     .from('commissions')
