@@ -7,7 +7,6 @@ export const dynamic = 'force-dynamic';
 export default async function CommissionsPage() {
   const supabase = await createClient();
 
-  // HARD-CODE JANE'S DATA — THIS WILL WORK
   const { data: commissions } = await supabase
     .from('commissions')
     .select('*')
@@ -17,7 +16,7 @@ export default async function CommissionsPage() {
   const profile = {
     full_name: 'Jane Doe',
     subdomain: 'jane',
-    avatar_url: null,
+    avatar_url: undefined,  // ← changed from null to undefined
   };
 
   const pending = commissions
