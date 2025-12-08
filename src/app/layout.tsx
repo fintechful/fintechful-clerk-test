@@ -7,8 +7,7 @@ import {
   UserButton,
 } from '@clerk/nextjs';
 import './globals.css';
-import { Toaster } from 'sonner';
-import { TOASTER_TEMPLATE } from '@/components/ui/toast'
+import { Toaster } from 'sonner';   // ← This is all you need!
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -30,11 +29,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <UserButton afterSignOutUrl="/" />
             </SignedIn>
           </header>
-
           <main className="p-10">{children}</main>
-
-          <Toaster position="top-center" richColors />
-          {TOASTER_TEMPLATE}
+          <Toaster position="top-center" richColors closeButton />
         </body>
       </html>
     </ClerkProvider>
