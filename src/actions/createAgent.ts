@@ -1,8 +1,11 @@
+// src/actions/createAgent.ts
+'use server';
+
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/utils/supabase/server';
+import { createActionClient } from '@/utils/supabase/action-client';
 
 export async function createAgent(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = await createActionClient();   // ← Use this one
 
   const full_name = formData.get('full_name') as string;
   const email = formData.get('email') as string;
@@ -12,8 +15,8 @@ export async function createAgent(formData: FormData) {
   const avatar_url = formData.get('avatar_url') as string | null;
 
   try {
-    // 1. Create user in Clerk via Server API
-    const clerkResponse = await fetch('https://api.clerk.com/v1/users', {
+    // Create Clerk user
+    const clerkRes = await fetch('https://api.clerk.com/v1/users', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
@@ -23,36 +26,34 @@ export async function createAgent(formData: FormData) {
         email_address: [email],
         first_name: full_name.split(' ')[0],
         last_name: full_name.split(' ').slice(1).join(' ') || 'Agent',
-        unsafe_metadata: { role: 'agent' },
-        // Clerk will send password reset email automatically
       }),
     });
 
-    if (!clerkResponse.ok) {
-      const err = await clerkResponse.json();
-      throw new Error(err.errors?.[0]?.message || 'Clerk failed');
+    if (!clerkRes.ok) {
+      const err = await clerkRes.json();
+      throw new Error(err.errors?.[0]?.message || 'Clerk error');
     }
 
-    const clerkUser = await clerkResponse.json();
+    const clerkUser = await clerkRes.json();
 
-    // 2. Insert profile in Supabase
+    // Insert profile
     const { error } = await supabase
       .from('profiles')
       .insert({
         clerk_user_id: clerkUser.id,
         full_name,
         email,
-        phone,
-        tagline,
-        bio,
-        avatar_url,
+        phone: phone || null,
+        tagline: tagline || null,
+        bio: bio || null,
+        avatar_url: avatar_url || null,
         role: 'agent',
       });
 
     if (error) throw error;
 
     revalidatePath('/admin');
-    return { success: true, userId: clerkUser.id };
+    return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
   }

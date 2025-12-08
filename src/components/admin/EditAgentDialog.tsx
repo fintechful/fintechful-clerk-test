@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { useState } from 'react';
-import { createClientOnly } from '@/utils/supabase/client-only';
+import { createClient } from '@/utils/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,7 @@ type Props = {
 };
 
 export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }: Props) {
-  const supabase = createClientOnly();
+  const supabase = createClient();
   const [loading, setLoading] = useState(false);
   const isNew = !agent;
 
