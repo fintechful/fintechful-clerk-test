@@ -1,3 +1,4 @@
+// src/components/admin/EditAgentDialog.tsx
 'use client';
 
 import { useState } from 'react';
@@ -9,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, Loader2 } from 'lucide-react';
-import { toast } from 'sonner'
+import { toast } from 'sonner';
 
 type Agent = {
   clerk_user_id: string;
@@ -53,11 +54,11 @@ export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }
       .upload(filePath, file, { upsert: true });
 
     if (error) {
-      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+      toast.error('Upload failed', { description: error.message });
     } else {
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
       setForm({ ...form, avatar_url: publicUrl });
-      toast({ title: 'Success', description: 'Photo updated!' });
+      toast.success('Photo updated!');
     }
     setLoading(false);
   };
@@ -70,9 +71,9 @@ export default function EditAgentDialog({ agent, open, onOpenChange, onSuccess }
       .eq('clerk_user_id', agent!.clerk_user_id);
 
     if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Failed to save', { description: error.message });
     } else {
-      toast({ title: 'Success', description: 'Agent updated!' });
+      toast.success('Agent updated!');
       onSuccess();
       onOpenChange(false);
     }
