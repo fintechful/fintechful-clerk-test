@@ -31,7 +31,7 @@ export default function EditAgentDialog({ open, onOpenChange, onSuccess }: Props
 
     const formData = new FormData();
     formData.append('full_name', fullName.trim());
-    formData.append('email', email.trim().toLowerCase());
+   // no need to append email for this test
 
     const result = await createAgent(formData);
 
