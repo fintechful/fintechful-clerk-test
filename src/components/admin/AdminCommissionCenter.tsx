@@ -87,7 +87,7 @@ export function AdminCommissionCenter() {
     if (!file) return;
 
     const text = await file.text();
-    const lines = text.split('\n').slice(1);
+    const lines = text.split('\n').slice(1); // skip header
     let added = 0;
     let skipped = 0;
 
