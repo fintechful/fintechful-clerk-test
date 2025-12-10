@@ -16,7 +16,6 @@ export function AdminCommissionCenter() {
   const supabase = createClient();
 
   const loadCommissions = async () => {
-    console.log('Loading commissions...'); // ← debug
     const { data, error } = await supabase
       .from('commissions')
       .select(`
@@ -27,18 +26,35 @@ export function AdminCommissionCenter() {
         gross_commission_cents,
         agent_share_cents,
         status,
-        profiles ( full_name, subdomain )
+        clerk_user_id
       `)
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Supabase error:', error);
       toast.error('Failed to load commissions');
+      console.error('Supabase error:', error);
       setCommissions([]);
-    } else {
-      console.log('Loaded commissions:', data);
-      setCommissions(data || []);
+      return;
     }
+
+    // Fetch agent names in one query
+    const clerkIds = data.map(c => c.clerk_user_id).filter(Boolean);
+    const { data: agents } = await supabase
+      .from('profiles')
+      .select('clerk_user_id, full_name, subdomain')
+      .in('clerk_user_id', clerkIds);
+
+    const agentMap = Object.fromEntries(
+      (agents || []).map(a => [a.clerk_user_id, { full_name: a.full_name, subdomain: a.subdomain }])
+    );
+
+    const enriched = data.map(c => ({
+      ...c,
+      agent_name: agentMap[c.clerk_user_id]?.full_name || 'Unknown',
+      agent_subdomain: agentMap[c.clerk_user_id]?.subdomain || c.subdomain,
+    }));
+
+    setCommissions(enriched);
   };
 
   useEffect(() => {
@@ -46,9 +62,9 @@ export function AdminCommissionCenter() {
   }, []);
 
   const filtered = commissions.filter(c =>
-    c.subdomain?.toLowerCase().includes(search.toLowerCase()) ||
-    c.provider.toLowerCase().includes(search.toLowerCase()) ||
-    c.profiles?.full_name?.toLowerCase().includes(search.toLowerCase())
+    c.agent_subdomain?.toLowerCase().includes(search.toLowerCase()) ||
+    c.agent_name?.toLowerCase().includes(search.toLowerCase()) ||
+    c.provider.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,7 +72,7 @@ export function AdminCommissionCenter() {
     if (!file) return;
 
     const text = await file.text();
-    const lines = text.split('\n').slice(1);
+    const lines = text.split('\n').slice(1); // skip header
     let added = 0;
     let skipped = 0;
 
@@ -102,7 +118,7 @@ export function AdminCommissionCenter() {
     }
 
     toast.success(`Processed: ${added} added, ${skipped} skipped`);
-    loadCommissions(); // ← refresh after upload
+    loadCommissions(); // ← refresh immediately
   };
 
   const markAsPaid = async (id: string) => {
@@ -124,7 +140,7 @@ export function AdminCommissionCenter() {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search agent, provider..."
+            placeholder="Search agent or provider..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
@@ -164,7 +180,7 @@ export function AdminCommissionCenter() {
               filtered.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="font-medium">
-                    {c.profiles?.full_name || 'Unknown'} (@{c.subdomain})
+                    {c.agent_name} (@{c.agent_subdomain})
                   </TableCell>
                   <TableCell>{c.provider}</TableCell>
                   <TableCell>${(c.gross_commission_cents / 100).toFixed(2)}</TableCell>
