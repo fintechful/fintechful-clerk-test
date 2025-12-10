@@ -9,10 +9,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Upload, Search, CheckCircle2 } from 'lucide-react';
+import { DateRangePicker } from '@/components/ui/DateRangePicker';
+import { addDays } from 'date-fns';
 
 export function AdminCommissionCenter() {
   const [commissions, setCommissions] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
   const supabase = createClient();
 
   const loadCommissions = async () => {
@@ -37,7 +43,7 @@ export function AdminCommissionCenter() {
       return;
     }
 
-    // Fetch agent names in one query
+    // Fetch agent names
     const clerkIds = data.map(c => c.clerk_user_id).filter(Boolean);
     const { data: agents } = await supabase
       .from('profiles')
@@ -61,18 +67,27 @@ export function AdminCommissionCenter() {
     loadCommissions();
   }, []);
 
-  const filtered = commissions.filter(c =>
-    c.agent_subdomain?.toLowerCase().includes(search.toLowerCase()) ||
-    c.agent_name?.toLowerCase().includes(search.toLowerCase()) ||
-    c.provider.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filter by search and date range
+  const filtered = commissions.filter(c => {
+    const matchesSearch =
+      c.agent_subdomain?.toLowerCase().includes(search.toLowerCase()) ||
+      c.agent_name?.toLowerCase().includes(search.toLowerCase()) ||
+      c.provider.toLowerCase().includes(search.toLowerCase());
+
+    const createdAt = new Date(c.created_at);
+    const matchesDate =
+      (!dateRange.from || createdAt >= dateRange.from) &&
+      (!dateRange.to || createdAt <= addDays(dateRange.to, 1));
+
+    return matchesSearch && matchesDate;
+  });
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const text = await file.text();
-    const lines = text.split('\n').slice(1); // skip header
+    const lines = text.split('\n').slice(1);
     let added = 0;
     let skipped = 0;
 
@@ -118,7 +133,7 @@ export function AdminCommissionCenter() {
     }
 
     toast.success(`Processed: ${added} added, ${skipped} skipped`);
-    loadCommissions(); // ← refresh immediately
+    loadCommissions();
   };
 
   const markAsPaid = async (id: string) => {
@@ -137,15 +152,16 @@ export function AdminCommissionCenter() {
       <h1 className="text-4xl font-bold">Commission Center (Super Admin)</h1>
 
       <div className="flex gap-4 items-center">
-        <div className="relative flex-1 max-w-md">
+        <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search agent or provider..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
+            className="pl-10 w-80"
           />
         </div>
+        <DateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
         <label className="cursor-pointer">
           <Button asChild>
             <div>

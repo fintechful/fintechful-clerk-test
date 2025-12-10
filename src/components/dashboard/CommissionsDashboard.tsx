@@ -23,7 +23,7 @@ type Commission = {
   gross_commission_cents: number;
   agent_share_cents: number;
   status: 'pending' | 'paid';
-  agent_total_cents: number; // 55% only
+  agent_total_cents: number;
 };
 
 type Props = {
