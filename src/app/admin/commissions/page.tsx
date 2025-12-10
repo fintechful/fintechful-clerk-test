@@ -17,9 +17,7 @@ export default async function AdminCommissionsPage() {
     .eq('clerk_user_id', user.id)
     .single();
 
-  if (profile?.role !== 'super_admin') {
-    redirect('/dashboard');
-  }
+  if (profile?.role !== 'super_admin') redirect('/dashboard');
 
   return <AdminCommissionCenter />;
 }
