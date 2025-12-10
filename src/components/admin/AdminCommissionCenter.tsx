@@ -165,30 +165,50 @@ export function AdminCommissionCenter() {
         </Table>
       </div>
 
-      {editingId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg space-y-4 max-w-md w-full">
-            <h3 className="text-xl font-bold">Edit Commission</h3>
-            <Input
-              label="Gross"
-              value={editForm.gross_commission_cents / 100}
-              onChange={e => setEditForm({ ...editForm, gross_commission_cents: Math.round(parseFloat(e.target.value) * 100) })}
-            />
-            <Input
-              label="Agent Share"
-              value={editForm.agent_share_cents / 100}
-              onChange={e => setEditForm({ ...editForm, agent_share_cents: Math.round(parseFloat(e.target.value) * 100) })}
-            />
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
-              <Button onClick={saveEdit}>
-                <Save className="mr-2 h-4 w-4" />
-                Save
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+    {editingId && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg space-y-4 max-w-md w-full">
+      <h3 className="text-xl font-bold">Edit Commission</h3>
+
+      <div>
+        <Label>Gross Commission ($)</Label>
+        <Input
+          type="number"
+          step="0.01"
+          value={(editForm.gross_commission_cents / 100).toFixed(2)}
+          onChange={(e) => {
+            const value = parseFloat(e.target.value) || 0;
+            setEditForm({
+              ...editForm,
+              gross_commission_cents: Math.round(value * 100),
+              agent_share_cents: Math.round(value * 100 * 0.55), // auto 55%
+            });
+          }}
+        />
+      </div>
+
+      <div>
+        <Label>Agent Share (55% auto)</Label>
+        <Input
+          type="number"
+          step="0.01"
+          value={(editForm.agent_share_cents / 100).toFixed(2)}
+          disabled
+        />
+      </div>
+
+      <div className="flex justify-end gap-3">
+        <Button variant="outline" onClick={() => setEditingId(null)}>
+          Cancel
+        </Button>
+        <Button onClick={saveEdit}>
+          <Save className="mr-2 h-4 w-4" />
+          Save
+        </Button>
+      </div>
+    </div>
+  </div>
+    )}
     </div>
   );
 }
