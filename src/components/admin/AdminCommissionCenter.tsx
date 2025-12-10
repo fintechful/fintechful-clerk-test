@@ -37,54 +37,54 @@ export function AdminCommissionCenter() {
   );
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    const text = await file.text();
-    const lines = text.split('\n').slice(1); // skip header
-    let added = 0;
-    let skipped = 0;
+  const text = await file.text();
+  const lines = text.split('\n').slice(1);
+  let added = 0;
+  let skipped = 0;
 
-    for (const line of lines) {
-      const cols = line.split(',');
-      if (cols.length < 3) continue;
+  for (const line of lines) {
+    const cols = line.split(',');
+    if (cols.length < 3) continue;
 
-      const subdomain = cols[0].trim().toLowerCase();
-      const provider = cols[1].trim();
-      const grossStr = cols[2].trim().replace(/[^0-9.-]/g, '');
-      const grossCents = Math.round(parseFloat(grossStr) * 100);
+    const subdomain = cols[0].trim().toLowerCase();
+    const provider = cols[1].trim();
+    const grossStr = cols[2].trim().replace(/[^0-9.-]/g, '');
+    const grossCents = Math.round(parseFloat(grossStr) * 100);
 
-      if (!subdomain || !provider || isNaN(grossCents)) continue;
+    if (!subdomain || !provider || isNaN(grossCents)) continue;
 
-      const agentShare = Math.round(grossCents * 0.55);
+    const agentShare = Math.round(grossCents * 0.55);
 
-      const { data: agent } = await supabase
-        .from('profiles')
-        .select('clerk_user_id')
-        .eq('subdomain', subdomain)
-        .single();
+    const { data: agent } = await supabase
+      .from('profiles')
+      .select('clerk_user_id')
+      .eq('subdomain', subdomain)
+      .single();
 
-      if (!agent) {
-        skipped++;
-        continue;
-      }
-
-      const { error } = await supabase.from('commissions').insert({
-        clerk_user_id: agent.clerk_user_id,
-        subdomain,
-        provider,
-        product_type: 'unknown',
-        gross_commission_cents: grossCents,
-        agent_share_cents: agentShare,
-        provider_record_id: `${provider}-${Date.now()}-${added}`,
-        status: 'pending',
-      });
-
-      if (!error) added++;
+    if (!agent) {
+      skipped++;
+      continue;
     }
 
-    toast.success(`Processed: ${added} added, ${skipped} skipped`);
-    loadCommissions();
+    const { error } = await supabase.from('commissions').insert({
+      clerk_user_id: agent.clerk_user_id,
+      subdomain,
+      provider,
+      product_type: 'unknown',
+      gross_commission_cents: grossCents,
+      agent_share_cents: agentShare,
+      provider_record_id: `${provider}-${Date.now()}-${added}`,
+      status: 'pending',
+    });
+
+    if (!error) added++;
+  }
+
+  toast.success(`Processed: ${added} added, ${skipped} skipped`);
+  loadCommissions();   // ← THIS LINE RELOADS THE TABLE INSTANTLY
   };
 
   const markAsPaid = async (ids: string[]) => {
