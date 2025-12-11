@@ -94,15 +94,17 @@ export function AdminCommissionCenter() {
     if (!original) return;
 
     // Recalculate agent share
-    const gross = Number(editValues.gross_commission_cents) || 0;
-    const agent_share_cents = Math.round(gross * 0.55);
+    // Convert from dollars to cents for saving
+  const grossDollars = Number(editValues.gross_dollars ?? original.gross_commission_cents / 100);
+  const grossCents = Math.round(grossDollars * 100);
+  const agent_share_cents = Math.round(grossCents * 0.55);
 
-    const updates = {
-      provider: editValues.provider,
-      gross_commission_cents: gross,
-      agent_share_cents,
-      status: editValues.status,
-    };
+  const updates = {
+    provider: editValues.provider ?? original.provider,
+    gross_commission_cents: grossCents,
+    agent_share_cents,
+    status: editValues.status ?? original.status,
+  };
 
     const { error } = await supabase
       .from('commissions')
@@ -331,26 +333,37 @@ export function AdminCommissionCenter() {
                       )}
                     </TableCell>
 
-                    {/* Gross - Editable */}
+                    {/* Gross - Editable (Dollars) */}
                     <TableCell onClick={() => !isEditing && startEdit(c)} className="cursor-pointer">
                       {isEditing ? (
                         <Input
                           type="number"
-                          value={editValues.gross_commission_cents || ''}
-                          onChange={(e) => setEditValues({ ...editValues, gross_commission_cents: Number(e.target.value) })}
+                          step="0.01"
+                          value={editValues.gross_dollars ?? (c.gross_commission_cents / 100).toFixed(2)}
+                          onChange={(e) => {
+                            const dollars = parseFloat(e.target.value) || 0;
+                            setEditValues({
+                              ...editValues,
+                              gross_dollars: dollars  // Store as dollars temporarily
+                            });
+                          }}
                           onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
-                          className="h-8 w-24"
+                          className="h-8 w-32"
+                          autoFocus
                         />
                       ) : (
                         `$${(c.gross_commission_cents / 100).toFixed(2)}`
                       )}
                     </TableCell>
 
-                    {/* Agent Share - Auto-calculated */}
+                    {/* Agent Share - Auto-calculated (Live preview in dollars) */}
                     <TableCell className="font-semibold text-green-600">
-                      ${ (displayedAgentShare / 100).toFixed(2) }
+                      {isEditing
+                        ? `$${(Number(editValues.gross_dollars || c.gross_commission_cents / 100) * 0.55).toFixed(2) }`
+                        : `$${(c.agent_share_cents / 100).toFixed(2)}`
+                      }
                     </TableCell>
-
+                    
                     {/* Status - Editable Select */}
                     <TableCell onClick={() => !isEditing && startEdit(c)} className="cursor-pointer">
                       {isEditing ? (
