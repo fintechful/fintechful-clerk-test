@@ -230,70 +230,72 @@ export function AdminCommissionCenter() {
       </div>
 
       <div className="rounded-lg border bg-card">
-        <div className="max-h-[75vh] overflow-y-auto" onScroll={handleScroll}>
-          <Table>
-            <TableHeader className="sticky top-0 bg-card z-10 border-b">
-              <TableRow>
-                <TableHead className="w-12"><Checkbox checked={commissions.length > 0 && selectedIds.length === commissions.length} onCheckedChange={toggleSelectAll} /></TableHead>
-                <TableHead>Agent</TableHead>
-                <TableHead>Provider Date</TableHead>
-                <TableHead>Imported</TableHead>
-                <TableHead>Provider</TableHead>
-                <TableHead>Gross</TableHead>
-                <TableHead>Agent (55%)</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Paid Date</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {commissions.length === 0 && !loading && <TableRow><TableCell colSpan={10} className="text-center py-12 text-muted-foreground">No commissions found</TableCell></TableRow>}
+        <div className="table-horizontal-scroll">
+          <div className="max-h-[75vh] overflow-y-auto" onScroll={handleScroll}>
+            <Table>
+              <TableHeader className="sticky top-0 bg-card z-10 border-b">
+                <TableRow>
+                  <TableHead className="w-12"><Checkbox checked={commissions.length > 0 && selectedIds.length === commissions.length} onCheckedChange={toggleSelectAll} /></TableHead>
+                  <TableHead>Agent</TableHead>
+                  <TableHead>Provider Date</TableHead>
+                  <TableHead>Imported</TableHead>
+                  <TableHead>Provider</TableHead>
+                  <TableHead>Gross</TableHead>
+                  <TableHead>Agent (55%)</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Paid Date</TableHead>
+                  <TableHead>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {commissions.length === 0 && !loading && <TableRow><TableCell colSpan={10} className="text-center py-12 text-muted-foreground">No commissions found</TableCell></TableRow>}
 
-              {commissions.map(c => {
-                const isEditing = editingId === c.id;
-                const grossDollars = editValues.gross_dollars ?? (c.gross_commission_cents / 100).toFixed(2);
-                const displayedAgentShare = isEditing ? (Number(grossDollars) * 0.55).toFixed(2) : (c.agent_share_cents / 100).toFixed(2);
+                {commissions.map(c => {
+                  const isEditing = editingId === c.id;
+                  const grossDollars = editValues.gross_dollars ?? (c.gross_commission_cents / 100).toFixed(2);
+                  const displayedAgentShare = isEditing ? (Number(grossDollars) * 0.55).toFixed(2) : (c.agent_share_cents / 100).toFixed(2);
 
-                return (
-                  <TableRow key={c.id} className={isEditing ? 'bg-muted/50' : ''}>
-                    <TableCell><Checkbox checked={selectedIds.includes(c.id)} onCheckedChange={() => toggleSelect(c.id)} disabled={isEditing} /></TableCell>
-                    <TableCell className="font-medium">{c.agent_name} (@{c.agent_subdomain})</TableCell>
-                    <TableCell>{c.provider_record_date ? format(new Date(c.provider_record_date), 'MMM d, yyyy') : '—'}</TableCell>
-                    <TableCell>{format(new Date(c.created_at), 'MMM d, yyyy')}</TableCell>
-                    <TableCell onClick={() => !isEditing && startEdit(c)} className="cursor-pointer">
-                      {isEditing ? <Input value={editValues.provider || ''} onChange={e => setEditValues({ ...editValues, provider: e.target.value })} onKeyDown={e => e.key === 'Enter' && saveEdit()} className="h-8" autoFocus /> : c.provider}
-                    </TableCell>
-                    <TableCell onClick={() => !isEditing && startEdit(c)} className="cursor-pointer">
-                      {isEditing ? <Input type="number" step="0.01" value={grossDollars} onChange={e => setEditValues({ ...editValues, gross_dollars: e.target.value })} onKeyDown={e => e.key === 'Enter' && saveEdit()} className="h-8 w-32" /> : `$${(c.gross_commission_cents / 100).toFixed(2)}`}
-                    </TableCell>
-                    <TableCell className="font-semibold text-green-600">${displayedAgentShare}</TableCell>
-                    <TableCell onClick={() => !isEditing && startEdit(c)} className="cursor-pointer">
-                      {isEditing ? (
-                        <Select value={editValues.status || c.status} onValueChange={v => setEditValues({ ...editValues, status: v })}>
-                          <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="paid">Paid</SelectItem>
-                            <SelectItem value="rejected">Rejected</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Badge variant={c.status === 'paid' ? 'default' : c.status === 'rejected' ? 'destructive' : 'secondary'}>{c.status}</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{c.paid_at ? format(new Date(c.paid_at), 'MMM d, yyyy') : '—'}</TableCell>
-                    <TableCell>
-                      {c.status === 'pending' && !isEditing && <Button size="sm" onClick={() => markAsPaid(c.id)}><CheckCircle2 className="h-4 w-4" /></Button>}
-                      {isEditing && <div className="flex gap-1"><Button size="sm" onClick={saveEdit}>Save</Button><Button size="sm" variant="outline" onClick={cancelEdit}>Cancel</Button></div>}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                  return (
+                    <TableRow key={c.id} className={isEditing ? 'bg-muted/50' : ''}>
+                      <TableCell><Checkbox checked={selectedIds.includes(c.id)} onCheckedChange={() => toggleSelect(c.id)} disabled={isEditing} /></TableCell>
+                      <TableCell className="font-medium">{c.agent_name} (@{c.agent_subdomain})</TableCell>
+                      <TableCell>{c.provider_record_date ? format(new Date(c.provider_record_date), 'MMM d, yyyy') : '—'}</TableCell>
+                      <TableCell>{format(new Date(c.created_at), 'MMM d, yyyy')}</TableCell>
+                      <TableCell onClick={() => !isEditing && startEdit(c)} className="cursor-pointer">
+                        {isEditing ? <Input value={editValues.provider || ''} onChange={e => setEditValues({ ...editValues, provider: e.target.value })} onKeyDown={e => e.key === 'Enter' && saveEdit()} className="h-8" autoFocus /> : c.provider}
+                      </TableCell>
+                      <TableCell onClick={() => !isEditing && startEdit(c)} className="cursor-pointer">
+                        {isEditing ? <Input type="number" step="0.01" value={grossDollars} onChange={e => setEditValues({ ...editValues, gross_dollars: e.target.value })} onKeyDown={e => e.key === 'Enter' && saveEdit()} className="h-8 w-32" /> : `$${(c.gross_commission_cents / 100).toFixed(2)}`}
+                      </TableCell>
+                      <TableCell className="font-semibold text-green-600">${displayedAgentShare}</TableCell>
+                      <TableCell onClick={() => !isEditing && startEdit(c)} className="cursor-pointer">
+                        {isEditing ? (
+                          <Select value={editValues.status || c.status} onValueChange={v => setEditValues({ ...editValues, status: v })}>
+                            <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="paid">Paid</SelectItem>
+                              <SelectItem value="rejected">Rejected</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Badge variant={c.status === 'paid' ? 'default' : c.status === 'rejected' ? 'destructive' : 'secondary'}>{c.status}</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{c.paid_at ? format(new Date(c.paid_at), 'MMM d, yyyy') : '—'}</TableCell>
+                      <TableCell>
+                        {c.status === 'pending' && !isEditing && <Button size="sm" onClick={() => markAsPaid(c.id)}><CheckCircle2 className="h-4 w-4" /></Button>}
+                        {isEditing && <div className="flex gap-1"><Button size="sm" onClick={saveEdit}>Save</Button><Button size="sm" variant="outline" onClick={cancelEdit}>Cancel</Button></div>}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
 
-              {loading && <TableRow><TableCell colSpan={10} className="text-center py-8">Loading more...</TableCell></TableRow>}
-              {!hasMore && commissions.length > 0 && <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">No more commissions</TableCell></TableRow>}
-            </TableBody>
-          </Table>
+                {loading && <TableRow><TableCell colSpan={10} className="text-center py-8">Loading more...</TableCell></TableRow>}
+                {!hasMore && commissions.length > 0 && <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">No more commissions</TableCell></TableRow>}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
     </div>
