@@ -66,7 +66,7 @@ export function AdminCommissionCenter() {
       if (dateRange.from) query = query.gte('created_at', dateRange.from.toISOString());
       if (dateRange.to) query = query.lte('created_at', addDays(dateRange.to, 1).toISOString());
 
-      // Range LAST — this was the main bug
+      // Range LAST
       query = query.range(from, to);
 
       const { data, error, count } = await query;
@@ -98,12 +98,12 @@ export function AdminCommissionCenter() {
           agent_subdomain: agentMap[c.clerk_user_id]?.subdomain || c.subdomain || '—',
         }));
       }
-let filtered = enriched;
+      let filtered = enriched;
 
-      // Client-side filter for agent name and subdomain (with @ support)
+      // Client-side filter for agent name and subdomain (with or without @)
       if (search.trim()) {
         const term = search.trim().toLowerCase();
-        const termNoAt = term.replace('@', '');
+        const termNoAt = term.startsWith('@') ? term.slice(1) : term;
         filtered = enriched.filter((c: any) =>
           c.agent_name?.toLowerCase().includes(term) ||
           c.agent_name?.toLowerCase().includes(termNoAt) ||
@@ -115,11 +115,11 @@ let filtered = enriched;
       if (reset) {
         setCommissions(filtered);
       } else {
-        // When appending, apply the same client-side filter to the new batch
+        // Apply same filter to new batch when appending
         let newFiltered = enriched;
         if (search.trim()) {
           const term = search.trim().toLowerCase();
-          const termNoAt = term.replace('@', '');
+          const termNoAt = term.startsWith('@') ? term.slice(1) : term;
           newFiltered = enriched.filter((c: any) =>
             c.agent_name?.toLowerCase().includes(term) ||
             c.agent_name?.toLowerCase().includes(termNoAt) ||
