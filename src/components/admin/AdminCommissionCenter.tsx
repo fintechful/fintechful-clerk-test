@@ -57,15 +57,12 @@ export function AdminCommissionCenter() {
   `)
         .order('created_at', { ascending: false });
 
-      // Filters FIRST
+      // Filters FIRST - only server-side columns
       if (search.trim()) {
-      const term = search.trim();
-      query = query.or(`
-        provider.ilike.%${term}%,
-        agent_name.ilike.%${term}%,
-        agent_subdomain.ilike.%${term}%
-      `);
-    }
+        const term = `%${search.trim()}%`;
+        query = query.or(`provider.ilike.${term},subdomain.ilike.${term}`);
+      }
+
       if (dateRange.from) query = query.gte('created_at', dateRange.from.toISOString());
       if (dateRange.to) query = query.lte('created_at', addDays(dateRange.to, 1).toISOString());
 
@@ -102,10 +99,21 @@ export function AdminCommissionCenter() {
         }));
       }
 
+      let filtered = enriched;
+
+      // Client-side filter for agent name (since it's added during enrichment)
+      if (search.trim()) {
+        const term = search.trim().toLowerCase();
+        filtered = enriched.filter((c: any) =>
+          c.agent_name?.toLowerCase().includes(term) ||
+          c.agent_subdomain?.toLowerCase().includes(term)
+        );
+      }
+
       if (reset) {
-        setCommissions(enriched);
+        setCommissions(filtered);
       } else {
-        setCommissions(prev => [...prev, ...enriched]);
+        setCommissions(prev => [...prev, ...filtered]);
       }
 
       setHasMore(data.length === PAGE_SIZE);
