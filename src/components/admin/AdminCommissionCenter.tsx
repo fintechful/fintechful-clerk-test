@@ -54,19 +54,22 @@ export function AdminCommissionCenter() {
         status,
         clerk_user_id
       `)
-      .range(from, to)
+
       .order('created_at', { ascending: false });
 
+    // APPLY FILTERS FIRST
     if (search) {
       query = query.or(`provider.ilike.%${search}%,subdomain.ilike.%${search}%`);
     }
-
     if (dateRange.from) {
       query = query.gte('created_at', dateRange.from.toISOString());
     }
     if (dateRange.to) {
       query = query.lte('created_at', addDays(dateRange.to, 1).toISOString());
     }
+
+    // RANGE LAST
+    query = query.range(from, to);
 
     const { data, error } = await query;
 
