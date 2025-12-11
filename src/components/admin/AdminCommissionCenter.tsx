@@ -98,22 +98,36 @@ export function AdminCommissionCenter() {
           agent_subdomain: agentMap[c.clerk_user_id]?.subdomain || c.subdomain || '—',
         }));
       }
+let filtered = enriched;
 
-      let filtered = enriched;
-
-      // Client-side filter for agent name (since it's added during enrichment)
+      // Client-side filter for agent name and subdomain (with @ support)
       if (search.trim()) {
         const term = search.trim().toLowerCase();
+        const termNoAt = term.replace('@', '');
         filtered = enriched.filter((c: any) =>
           c.agent_name?.toLowerCase().includes(term) ||
-          c.agent_subdomain?.toLowerCase().includes(term)
+          c.agent_name?.toLowerCase().includes(termNoAt) ||
+          c.agent_subdomain?.toLowerCase().includes(term) ||
+          c.agent_subdomain?.toLowerCase().includes(termNoAt)
         );
       }
 
       if (reset) {
         setCommissions(filtered);
       } else {
-        setCommissions(prev => [...prev, ...filtered]);
+        // When appending, apply the same client-side filter to the new batch
+        let newFiltered = enriched;
+        if (search.trim()) {
+          const term = search.trim().toLowerCase();
+          const termNoAt = term.replace('@', '');
+          newFiltered = enriched.filter((c: any) =>
+            c.agent_name?.toLowerCase().includes(term) ||
+            c.agent_name?.toLowerCase().includes(termNoAt) ||
+            c.agent_subdomain?.toLowerCase().includes(term) ||
+            c.agent_subdomain?.toLowerCase().includes(termNoAt)
+          );
+        }
+        setCommissions(prev => [...prev, ...newFiltered]);
       }
 
       setHasMore(data.length === PAGE_SIZE);
