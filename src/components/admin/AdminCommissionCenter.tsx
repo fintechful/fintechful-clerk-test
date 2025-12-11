@@ -59,8 +59,13 @@ export function AdminCommissionCenter() {
 
       // Filters FIRST
       if (search.trim()) {
-        query = query.ilike('provider', `%${search.trim()}%`);
-      }
+      const term = search.trim();
+      query = query.or(`
+        provider.ilike.%${term}%,
+        agent_name.ilike.%${term}%,
+        agent_subdomain.ilike.%${term}%
+      `);
+    }
       if (dateRange.from) query = query.gte('created_at', dateRange.from.toISOString());
       if (dateRange.to) query = query.lte('created_at', addDays(dateRange.to, 1).toISOString());
 
@@ -198,12 +203,7 @@ export function AdminCommissionCenter() {
       <div className="flex flex-wrap gap-4 items-center">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by provider..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 w-80"
-          />
+          <Input placeholder="Search by provider, agent name, or @subdomain..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 w-80" />
         </div>
         <DateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
 
