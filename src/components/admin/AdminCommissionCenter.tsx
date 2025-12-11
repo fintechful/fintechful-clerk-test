@@ -57,10 +57,10 @@ export function AdminCommissionCenter() {
   `)
         .order('created_at', { ascending: false });
 
-      // Filters FIRST - only server-side columns
+// Filters FIRST - ONLY provider (server-side, fast and reliable)
       if (search.trim()) {
         const term = `%${search.trim()}%`;
-        query = query.or(`provider.ilike.${term},subdomain.ilike.${term}`);
+        query = query.ilike('provider', term);
       }
 
       if (dateRange.from) query = query.gte('created_at', dateRange.from.toISOString());
@@ -98,36 +98,11 @@ export function AdminCommissionCenter() {
           agent_subdomain: agentMap[c.clerk_user_id]?.subdomain || c.subdomain || '—',
         }));
       }
-      let filtered = enriched;
-
-      // Client-side filter for agent name and subdomain (with or without @)
-      if (search.trim()) {
-        const term = search.trim().toLowerCase();
-        const termNoAt = term.startsWith('@') ? term.slice(1) : term;
-        filtered = enriched.filter((c: any) =>
-          c.agent_name?.toLowerCase().includes(term) ||
-          c.agent_name?.toLowerCase().includes(termNoAt) ||
-          c.agent_subdomain?.toLowerCase().includes(term) ||
-          c.agent_subdomain?.toLowerCase().includes(termNoAt)
-        );
-      }
 
       if (reset) {
-        setCommissions(filtered);
+        setCommissions(enriched);
       } else {
-        // Apply same filter to new batch when appending
-        let newFiltered = enriched;
-        if (search.trim()) {
-          const term = search.trim().toLowerCase();
-          const termNoAt = term.startsWith('@') ? term.slice(1) : term;
-          newFiltered = enriched.filter((c: any) =>
-            c.agent_name?.toLowerCase().includes(term) ||
-            c.agent_name?.toLowerCase().includes(termNoAt) ||
-            c.agent_subdomain?.toLowerCase().includes(term) ||
-            c.agent_subdomain?.toLowerCase().includes(termNoAt)
-          );
-        }
-        setCommissions(prev => [...prev, ...newFiltered]);
+        setCommissions(prev => [...prev, ...enriched]);
       }
 
       setHasMore(data.length === PAGE_SIZE);
@@ -225,7 +200,7 @@ export function AdminCommissionCenter() {
       <div className="flex flex-wrap gap-4 items-center">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search by provider, agent name, or @subdomain..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 w-80" />
+          <Input placeholder="Search by provider..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 w-80" />
         </div>
         <DateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
 
