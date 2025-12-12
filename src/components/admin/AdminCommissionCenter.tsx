@@ -149,9 +149,10 @@ export function AdminCommissionCenter() {
       gross_commission_cents: grossCents,
       agent_share_cents,
     };
+
     if (editValues.provider !== undefined) updates.provider = editValues.provider;
     if (editValues.status !== undefined) updates.status = editValues.status;
-    if (editValues.notes !== undefined) updates.notes = editValues.notes || null; // save empty as null
+    if (editValues.notes !== undefined) updates.notes = editValues.notes.trim() === '' ? null : editValues.notes.trim();
 
     const { error } = await supabase.from('commissions').update(updates).eq('id', editingId);
 
@@ -299,18 +300,26 @@ export function AdminCommissionCenter() {
                         {c.status === 'pending' && !isEditing && <Button size="sm" onClick={() => markAsPaid(c.id)}><CheckCircle2 className="h-4 w-4" /></Button>}
                         {isEditing && <div className="flex gap-1"><Button size="sm" onClick={saveEdit}>Save</Button><Button size="sm" variant="outline" onClick={cancelEdit}>Cancel</Button></div>}
                       </TableCell>
-                      <TableCell onClick={() => !isEditing && startEdit(c)} className="cursor-pointer max-w-xs">
+                      <TableCell className="max-w-md">
                         {isEditing ? (
-                          <Input
+                          <textarea
                             value={editValues.notes || ''}
                             onChange={(e) => setEditValues({ ...editValues, notes: e.target.value })}
-                            onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
-                            placeholder="Add notes..."
-                            className="h-8"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                saveEdit();
+                              }
+                            }}
+                            placeholder="Add notes... (Shift+Enter for new line)"
+                            className="min-w-[300px] max-w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                            rows={3}
                             autoFocus
                           />
                         ) : (
-                          <span className="text-muted-foreground">{c.notes || '—'}</span>
+                          <div className="max-w-md whitespace-pre-wrap text-sm text-muted-foreground">
+                            {c.notes || '—'}
+                          </div>
                         )}
                       </TableCell>
                     </TableRow>
