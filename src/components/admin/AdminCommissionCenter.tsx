@@ -257,8 +257,8 @@ export function AdminCommissionCenter() {
                       <TableCell><Checkbox checked={selectedIds.includes(c.id)} onCheckedChange={() => toggleSelect(c.id)} disabled={isEditing} /></TableCell>
                       <TableCell className="font-medium">{c.agent_name || 'Unknown'}</TableCell>
                       <TableCell>@{c.agent_subdomain || '—'}</TableCell>
-                      <TableCell>{c.provider_record_date ? format(new Date(c.provider_record_date), 'MMM d, yyyy') : '—'}</TableCell>
-                      <TableCell>{format(new Date(c.created_at), 'MMM d, yyyy')}</TableCell>
+                      <TableCell>{c.provider_record_date ? format(new Date(c.provider_record_date), 'MM/dd/yy') : '—'}</TableCell>
+<TableCell>{format(new Date(c.created_at), 'MM/dd/yy')}</TableCell>
                       <TableCell onClick={() => !isEditing && startEdit(c)} className="cursor-pointer">
                         {isEditing ? <Input value={editValues.provider || ''} onChange={e => setEditValues({ ...editValues, provider: e.target.value })} onKeyDown={e => e.key === 'Enter' && saveEdit()} className="h-8" autoFocus /> : c.provider}
                       </TableCell>
@@ -280,7 +280,7 @@ export function AdminCommissionCenter() {
                           <Badge variant={c.status === 'paid' ? 'default' : c.status === 'rejected' ? 'destructive' : 'secondary'}>{c.status}</Badge>
                         )}
                       </TableCell>
-                      <TableCell>{c.paid_at ? format(new Date(c.paid_at), 'MMM d, yyyy') : '—'}</TableCell>
+                      <TableCell>{c.paid_at ? format(new Date(c.paid_at), 'MM/dd/yy') : '—'}</TableCell>
                       <TableCell>
                         {c.status === 'pending' && !isEditing && <Button size="sm" onClick={() => markAsPaid(c.id)}><CheckCircle2 className="h-4 w-4" /></Button>}
                         {isEditing && <div className="flex gap-1"><Button size="sm" onClick={saveEdit}>Save</Button><Button size="sm" variant="outline" onClick={cancelEdit}>Cancel</Button></div>}
