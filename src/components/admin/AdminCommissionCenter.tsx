@@ -312,12 +312,12 @@ export function AdminCommissionCenter() {
                               }
                             }}
                             placeholder="Add notes... (Shift+Enter for new line)"
-                            className="min-w-[300px] max-w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                            className="min-w-[300px] w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                             rows={3}
                             autoFocus
                           />
                         ) : (
-                          <div className="max-w-md whitespace-pre-wrap text-sm text-muted-foreground">
+                          <div className="max-w-md cursor-pointer whitespace-pre-wrap text-sm text-muted-foreground" onClick={() => startEdit(c)}>
                             {c.notes || '—'}
                           </div>
                         )}
