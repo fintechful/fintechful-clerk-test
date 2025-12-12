@@ -151,6 +151,7 @@ export function AdminCommissionCenter() {
     };
     if (editValues.provider !== undefined) updates.provider = editValues.provider;
     if (editValues.status !== undefined) updates.status = editValues.status;
+    if (editValues.notes !== undefined) updates.notes = editValues.notes || null; // save empty as null
 
     const { error } = await supabase.from('commissions').update(updates).eq('id', editingId);
 
@@ -170,6 +171,7 @@ export function AdminCommissionCenter() {
       provider: c.provider,
       gross_dollars: (c.gross_commission_cents / 100).toFixed(2),
       status: c.status,
+      notes: c.notes || '',
     });
   };
 
@@ -253,6 +255,7 @@ export function AdminCommissionCenter() {
                   <TableHead>Status</TableHead>
                   <TableHead>Paid Date</TableHead>
                   <TableHead>Action</TableHead>
+                  <TableHead>Notes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -295,6 +298,20 @@ export function AdminCommissionCenter() {
                       <TableCell>
                         {c.status === 'pending' && !isEditing && <Button size="sm" onClick={() => markAsPaid(c.id)}><CheckCircle2 className="h-4 w-4" /></Button>}
                         {isEditing && <div className="flex gap-1"><Button size="sm" onClick={saveEdit}>Save</Button><Button size="sm" variant="outline" onClick={cancelEdit}>Cancel</Button></div>}
+                      </TableCell>
+                      <TableCell onClick={() => !isEditing && startEdit(c)} className="cursor-pointer max-w-xs">
+                        {isEditing ? (
+                          <Input
+                            value={editValues.notes || ''}
+                            onChange={(e) => setEditValues({ ...editValues, notes: e.target.value })}
+                            onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
+                            placeholder="Add notes..."
+                            className="h-8"
+                            autoFocus
+                          />
+                        ) : (
+                          <span className="text-muted-foreground">{c.notes || '—'}</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
