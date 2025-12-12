@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Upload, Search, CheckCircle2, Trash2, ChevronDown } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
 import { addDays, format } from 'date-fns';
 
@@ -197,6 +198,56 @@ export function AdminCommissionCenter() {
     loadCommissions(true);
   };
 
+  const exportToCSV = () => {
+    if (commissions.length === 0) {
+      toast.info('No data to export');
+      return;
+    }
+
+    const headers = [
+      'Agent Name',
+      'Subdomain',
+      'Provider Date',
+      'Imported',
+      'Provider',
+      'Gross',
+      'Agent (55%)',
+      'Status',
+      'Paid Date',
+      'Notes'
+    ];
+
+    const rows = commissions.map(c => [
+      c.agent_name || 'Unknown',
+      c.agent_subdomain || '',
+      c.provider_record_date ? format(new Date(c.provider_record_date), 'MM/dd/yy') : '',
+      format(new Date(c.created_at), 'MM/dd/yy'),
+      c.provider,
+      (c.gross_commission_cents / 100).toFixed(2),
+      (c.agent_share_cents / 100).toFixed(2),
+      c.status,
+      c.paid_at ? format(new Date(c.paid_at), 'MM/dd/yy') : '',
+      c.notes || ''
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${(cell + '').replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `commissions-export-${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success('CSV exported successfully');
+  };
+
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <h1 className="text-4xl font-bold">Commission Center (Super Admin)</h1>
@@ -224,6 +275,12 @@ export function AdminCommissionCenter() {
             <Button asChild><div><Upload className="mr-2 h-4 w-4" />Upload CSV</div></Button>
             <input type="file" accept=".csv" onChange={e => {/* your CSV logic */ }} className="hidden" />
           </label>
+        </div>
+        <div className="ml-4">
+          <Button onClick={exportToCSV} variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Export CSV
+          </Button>
         </div>
       </div>
       <div className="rounded-lg border bg-card">
@@ -258,7 +315,7 @@ export function AdminCommissionCenter() {
                       <TableCell className="font-medium">{c.agent_name || 'Unknown'}</TableCell>
                       <TableCell>@{c.agent_subdomain || '—'}</TableCell>
                       <TableCell>{c.provider_record_date ? format(new Date(c.provider_record_date), 'MM/dd/yy') : '—'}</TableCell>
-<TableCell>{format(new Date(c.created_at), 'MM/dd/yy')}</TableCell>
+                      <TableCell>{format(new Date(c.created_at), 'MM/dd/yy')}</TableCell>
                       <TableCell onClick={() => !isEditing && startEdit(c)} className="cursor-pointer">
                         {isEditing ? <Input value={editValues.provider || ''} onChange={e => setEditValues({ ...editValues, provider: e.target.value })} onKeyDown={e => e.key === 'Enter' && saveEdit()} className="h-8" autoFocus /> : c.provider}
                       </TableCell>
@@ -282,8 +339,12 @@ export function AdminCommissionCenter() {
                       </TableCell>
                       <TableCell>{c.paid_at ? format(new Date(c.paid_at), 'MM/dd/yy') : '—'}</TableCell>
                       <TableCell>
-                        {c.status === 'pending' && !isEditing && <Button size="sm" onClick={() => markAsPaid(c.id)}><CheckCircle2 className="h-4 w-4" /></Button>}
-                        {isEditing && <div className="flex gap-1"><Button size="sm" onClick={saveEdit}>Save</Button><Button size="sm" variant="outline" onClick={cancelEdit}>Cancel</Button></div>}
+                        {isEditing && (
+                          <div className="flex gap-1">
+                            <Button size="sm" onClick={saveEdit}>Save</Button>
+                            <Button size="sm" variant="outline" onClick={cancelEdit}>Cancel</Button>
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="max-w-md">
                         {isEditing ? (
