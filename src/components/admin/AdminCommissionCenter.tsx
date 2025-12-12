@@ -21,65 +21,56 @@ export function AdminCommissionCenter() {
   const [bulkAction, setBulkAction] = useState<'paid' | 'delete' | ''>('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<any>>({});
-
   const [search, setSearch] = useState('');
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined,
   });
-
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-
   const supabase = createClient();
 
   const loadCommissions = useCallback(async (reset = false) => {
     if (!hasMore && !reset) return;
     setLoading(true);
-
     const from = reset ? 0 : commissions.length;
     const to = from + PAGE_SIZE - 1;
-
     try {
       let query = supabase
         .from('commissions')
         .select(`
-    id,
-    created_at,
-    provider_record_date,
-    paid_at,
-    subdomain,
-    provider,
-    gross_commission_cents,
-    agent_share_cents,
-    status,
-    clerk_user_id
-  `)
+          id,
+          created_at,
+          provider_record_date,
+          paid_at,
+          subdomain,
+          provider,
+          gross_commission_cents,
+          agent_share_cents,
+          status,
+          notes,
+          clerk_user_id
+        `)
         .order('created_at', { ascending: false });
 
       // Filters FIRST - provider (partial), subdomain (partial or exact if quoted)
       if (search.trim()) {
         const term = search.trim();
-
-        // Check for quoted exact subdomain search: "jane"
         const exactMatch = term.match(/^"(.+)"$/);
         if (exactMatch) {
           const exactTerm = exactMatch[1];
           query = query.or(`provider.ilike.%${exactTerm}%,subdomain.eq.${exactTerm}`);
         } else {
-          // Normal partial search on provider and subdomain
           const partialTerm = `%${term}%`;
           query = query.or(`provider.ilike.${partialTerm},subdomain.ilike.${partialTerm}`);
         }
       }
-
       if (dateRange.from) query = query.gte('created_at', dateRange.from.toISOString());
       if (dateRange.to) query = query.lte('created_at', addDays(dateRange.to, 1).toISOString());
 
-      // Range LAST
       query = query.range(from, to);
 
-      const { data, error, count } = await query;
+      const { data, error } = await query;
 
       if (error) {
         toast.error('Failed to load commissions: ' + error.message);
@@ -91,21 +82,18 @@ export function AdminCommissionCenter() {
       // Enrich agent names
       const clerkIds = data.map((c: any) => c.clerk_user_id).filter(Boolean);
       let enriched = data;
-
       if (clerkIds.length > 0) {
         const { data: agents } = await supabase
           .from('profiles')
           .select('clerk_user_id, full_name, subdomain')
           .in('clerk_user_id', clerkIds);
-
         const agentMap = Object.fromEntries(
           (agents || []).map((a: any) => [a.clerk_user_id, { full_name: a.full_name, subdomain: a.subdomain }])
         );
-
         enriched = data.map((c: any) => ({
           ...c,
           agent_name: agentMap[c.clerk_user_id]?.full_name || 'Unknown',
-          agent_subdomain: agentMap[c.clerk_user_id]?.subdomain || c.subdomain || '—',
+          agent_subdomain: agentMap[c.clker_user_id]?.subdomain || c.subdomain || '—',
         }));
       }
 
@@ -152,7 +140,9 @@ export function AdminCommissionCenter() {
 
     if (editValues.provider !== undefined) updates.provider = editValues.provider;
     if (editValues.status !== undefined) updates.status = editValues.status;
-    if (editValues.notes !== undefined) updates.notes = editValues.notes.trim() === '' ? null : editValues.notes.trim();
+    if (editValues.notes !== undefined) {
+      updates.notes = editValues.notes.trim() === '' ? null : editValues.notes.trim();
+    }
 
     const { error } = await supabase.from('commissions').update(updates).eq('id', editingId);
 
@@ -162,6 +152,7 @@ export function AdminCommissionCenter() {
       toast.success('Updated');
       loadCommissions(true);
     }
+
     setEditingId(null);
     setEditValues({});
   };
@@ -209,14 +200,12 @@ export function AdminCommissionCenter() {
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <h1 className="text-4xl font-bold">Commission Center (Super Admin)</h1>
-
       <div className="flex flex-wrap gap-4 items-center">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search by provider..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 w-80" />
         </div>
         <DateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
-
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild><Button variant="outline" className="gap-2"><span>Bulk Actions</span><ChevronDown className="h-4 w-4" /></Button></DropdownMenuTrigger>
@@ -230,7 +219,6 @@ export function AdminCommissionCenter() {
           </Button>
           {selectedIds.length > 0 && <span className="text-sm text-muted-foreground">{selectedIds.length} selected</span>}
         </div>
-
         <div className="ml-auto">
           <label className="cursor-pointer">
             <Button asChild><div><Upload className="mr-2 h-4 w-4" />Upload CSV</div></Button>
@@ -238,7 +226,6 @@ export function AdminCommissionCenter() {
           </label>
         </div>
       </div>
-
       <div className="rounded-lg border bg-card">
         <div className="table-horizontal-scroll">
           <div className="max-h-[75vh] overflow-y-auto" onScroll={handleScroll}>
@@ -260,13 +247,11 @@ export function AdminCommissionCenter() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {commissions.length === 0 && !loading && <TableRow><TableCell colSpan={10} className="text-center py-12 text-muted-foreground">No commissions found</TableCell></TableRow>}
-
+                {commissions.length === 0 && !loading && <TableRow><TableCell colSpan={12} className="text-center py-12 text-muted-foreground">No commissions found</TableCell></TableRow>}
                 {commissions.map(c => {
                   const isEditing = editingId === c.id;
                   const grossDollars = editValues.gross_dollars ?? (c.gross_commission_cents / 100).toFixed(2);
                   const displayedAgentShare = isEditing ? (Number(grossDollars) * 0.55).toFixed(2) : (c.agent_share_cents / 100).toFixed(2);
-
                   return (
                     <TableRow key={c.id} className={isEditing ? 'bg-muted/50' : ''}>
                       <TableCell><Checkbox checked={selectedIds.includes(c.id)} onCheckedChange={() => toggleSelect(c.id)} disabled={isEditing} /></TableCell>
@@ -325,9 +310,8 @@ export function AdminCommissionCenter() {
                     </TableRow>
                   );
                 })}
-
-                {loading && <TableRow><TableCell colSpan={10} className="text-center py-8">Loading more...</TableCell></TableRow>}
-                {!hasMore && commissions.length > 0 && <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">No more commissions</TableCell></TableRow>}
+                {loading && <TableRow><TableCell colSpan={12} className="text-center py-8">Loading more...</TableCell></TableRow>}
+                {!hasMore && commissions.length > 0 && <TableRow><TableCell colSpan={12} className="text-center py-8 text-muted-foreground">No more commissions</TableCell></TableRow>}
               </TableBody>
             </Table>
           </div>
