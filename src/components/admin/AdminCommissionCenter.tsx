@@ -57,10 +57,20 @@ export function AdminCommissionCenter() {
   `)
         .order('created_at', { ascending: false });
 
-      // Filters FIRST - only server-side columns
+      // Filters FIRST - provider (partial), subdomain (partial or exact if quoted)
       if (search.trim()) {
-        const term = `%${search.trim()}%`;
-        query = query.or(`provider.ilike.${term},subdomain.ilike.${term}`);
+        const term = search.trim();
+
+        // Check for quoted exact subdomain search: "jane"
+        const exactMatch = term.match(/^"(.+)"$/);
+        if (exactMatch) {
+          const exactTerm = exactMatch[1];
+          query = query.or(`provider.ilike.%${exactTerm}%,subdomain.eq.${exactTerm}`);
+        } else {
+          // Normal partial search on provider and subdomain
+          const partialTerm = `%${term}%`;
+          query = query.or(`provider.ilike.${partialTerm},subdomain.ilike.${partialTerm}`);
+        }
       }
 
       if (dateRange.from) query = query.gte('created_at', dateRange.from.toISOString());
