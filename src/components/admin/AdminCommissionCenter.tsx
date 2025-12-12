@@ -57,10 +57,10 @@ export function AdminCommissionCenter() {
   `)
         .order('created_at', { ascending: false });
 
-// Filters FIRST - ONLY provider (server-side, fast and reliable)
+      // Filters FIRST - only server-side columns
       if (search.trim()) {
         const term = `%${search.trim()}%`;
-        query = query.ilike('provider', term);
+        query = query.or(`provider.ilike.${term},subdomain.ilike.${term}`);
       }
 
       if (dateRange.from) query = query.gte('created_at', dateRange.from.toISOString());
@@ -233,7 +233,8 @@ export function AdminCommissionCenter() {
               <TableHeader className="sticky top-0 bg-card z-10 border-b">
                 <TableRow>
                   <TableHead className="w-12"><Checkbox checked={commissions.length > 0 && selectedIds.length === commissions.length} onCheckedChange={toggleSelectAll} /></TableHead>
-                  <TableHead>Agent</TableHead>
+                  <TableHead>Agent Name</TableHead>
+                  <TableHead>Subdomain</TableHead>
                   <TableHead>Provider Date</TableHead>
                   <TableHead>Imported</TableHead>
                   <TableHead>Provider</TableHead>
@@ -255,7 +256,8 @@ export function AdminCommissionCenter() {
                   return (
                     <TableRow key={c.id} className={isEditing ? 'bg-muted/50' : ''}>
                       <TableCell><Checkbox checked={selectedIds.includes(c.id)} onCheckedChange={() => toggleSelect(c.id)} disabled={isEditing} /></TableCell>
-                      <TableCell className="font-medium">{c.agent_name} (@{c.agent_subdomain})</TableCell>
+                      <TableCell className="font-medium">{c.agent_name || 'Unknown'}</TableCell>
+                      <TableCell>@{c.agent_subdomain || '—'}</TableCell>
                       <TableCell>{c.provider_record_date ? format(new Date(c.provider_record_date), 'MMM d, yyyy') : '—'}</TableCell>
                       <TableCell>{format(new Date(c.created_at), 'MMM d, yyyy')}</TableCell>
                       <TableCell onClick={() => !isEditing && startEdit(c)} className="cursor-pointer">
