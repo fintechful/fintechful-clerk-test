@@ -249,7 +249,7 @@ export function AdminCommissionCenter() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8">
+    <div className="p-8 w-full space-y-8">
       <h1 className="text-4xl font-bold">Commission Center (Super Admin)</h1>
       <div className="flex flex-wrap gap-4 items-center">
         <div className="relative">
@@ -283,10 +283,10 @@ export function AdminCommissionCenter() {
           </Button>
         </div>
       </div>
-      <div className="rounded-lg border bg-card">
+      <div className="rounded-lg border bg-card w-full overflow-hidden">
         <div className="table-horizontal-scroll">
           <div className="max-h-[75vh] overflow-y-auto" onScroll={handleScroll}>
-            <Table>
+            <Table className="w-full">
               <TableHeader className="sticky top-0 bg-card z-10 border-b">
                 <TableRow>
                   <TableHead className="w-12"><Checkbox checked={commissions.length > 0 && selectedIds.length === commissions.length} onCheckedChange={toggleSelectAll} /></TableHead>
