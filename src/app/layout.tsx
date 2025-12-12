@@ -9,6 +9,7 @@ import {
 import './globals.css';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from 'next-themes';
+import ClientThemeToggle from '@/components/ClientThemeToggle';
 
 export default function RootLayout({
   children,
@@ -28,9 +29,7 @@ export default function RootLayout({
             <header className="flex justify-end items-center p-6 gap-6 bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-900 dark:to-indigo-900 text-white">
               <SignedOut>
                 <SignInButton mode="modal">
-                  <button className="underline hover:no-underline">
-                    Sign In
-                  </button>
+                  <button className="underline hover:no-underline">Sign In</button>
                 </SignInButton>
                 <SignUpButton mode="modal">
                   <button className="bg-white text-purple-600 font-bold px-6 py-3 rounded-full hover:bg-gray-100 transition">
@@ -39,8 +38,11 @@ export default function RootLayout({
                 </SignUpButton>
               </SignedOut>
               <SignedIn>
-                <UserButton afterSignOutUrl="/" />
-              </SignedIn>
+  <div className="flex items-center gap-4">
+    <ClientThemeToggle />
+    <UserButton afterSignOutUrl="/" />
+  </div>
+</SignedIn>
             </header>
 
             <main className="p-10">{children}</main>
