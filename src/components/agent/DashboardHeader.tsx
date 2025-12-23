@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/ui/button"
-import { Bell, Search, User } from "lucide-react"
+import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { GamificationBadge } from "@/components/agent/GamificationBadge"
 
 export function DashboardHeader() {
   return (
@@ -11,20 +11,18 @@ export function DashboardHeader() {
         <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
         <div className="relative max-w-md w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search transactions, agents..." className="pl-9 bg-background border-border" />
+          <Input
+            placeholder="Search transactions, agents, SMBs..."
+            className="pl-9 bg-background border-border"
+            disabled // optional: makes it clear it's placeholder
+          />
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
-        </Button>
-        <Button variant="ghost" size="icon">
-          <User className="w-5 h-5" />
-        </Button>
+      {/* Gamification Badge — Top Right */}
+      <div className="flex items-center">
+        <GamificationBadge rank={12} total={100} tier="Pro" />
       </div>
     </header>
-  )
+  );
 }
-

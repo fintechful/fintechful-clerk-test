@@ -11,7 +11,7 @@ type AgentLayoutProps = {
 
 export function AgentLayout({ children }: AgentLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
-
+  
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
@@ -23,7 +23,7 @@ export function AgentLayout({ children }: AgentLayoutProps) {
           "flex-1 flex flex-col transition-all duration-300"
         )}
       >
-        <DashboardHeader />
+        <DashboardHeader/>
         <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>

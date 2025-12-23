@@ -11,10 +11,7 @@ export default function ReportsPage() {
         <main className="p-6">
           <h1 className="text-3xl font-bold text-foreground">Reports</h1>
           <p className="text-muted-foreground mt-2">Generate and download financial reports</p>
-        </main>
-      
-
-      <GamificationBadge rank={12} total={25} tier="Silver" />
+        </main> 
     </div>
     </AgentLayout>
   )

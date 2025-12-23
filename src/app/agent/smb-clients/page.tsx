@@ -1,131 +1,268 @@
-"use client"
+'use client';
 
+import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { supabase } from '@/lib/supabase';
 import { AgentLayout } from '@/components/agent/AgentLayout';
-import { GamificationBadge } from "@/components/agent/GamificationBadge"
+import { GamificationBadge } from '@/components/agent/GamificationBadge';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Building2 } from "lucide-react"
-
-const smbReferrals = [
-  { business: "Acme Corp", owner: "John Smith", contact: "john@acmecorp.com", type: "Enterprise" },
-  { business: "Tech Solutions LLC", owner: "Jane Doe", contact: "jane@techsolutions.com", type: "Professional" },
-  { business: "Green Energy Co", owner: "Robert Brown", contact: "robert@greenenergy.com", type: "Enterprise" },
-  { business: "Digital Marketing Pro", owner: "Maria Garcia", contact: "maria@digitalmkt.com", type: "Starter" },
-  { business: "Consulting Group", owner: "James Wilson", contact: "james@consultgroup.com", type: "Professional" },
-]
-
-const smbCommissions = [
-  { date: "2024-01-15", smb: "Acme Corp", type: "Monthly Recurring", share: 450, status: "Paid" },
-  { date: "2024-01-12", smb: "Tech Solutions LLC", type: "Setup Fee", share: 1200, status: "Paid" },
-  { date: "2024-01-10", smb: "Green Energy Co", type: "Monthly Recurring", share: 380, status: "Pending" },
-  { date: "2024-01-08", smb: "Digital Marketing Pro", type: "Monthly Recurring", share: 150, status: "Paid" },
-  { date: "2024-01-05", smb: "Consulting Group", type: "Upgrade Fee", share: 850, status: "Pending" },
-]
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Building2, Mail, Phone, MapPin } from "lucide-react";
+import { format } from 'date-fns';
+import { motion } from 'framer-motion'; // npm install framer-motion
+import { cn } from '@/lib/utils';
 
 export default function SMBClientsPage() {
+  const { isLoaded, isSignedIn, user } = useUser();
+  const [smbReferrals, setSmbReferrals] = useState<any[]>([]);
+  const [ongoingCommissions, setOngoingCommissions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !user) {
+      setLoading(false);
+      return;
+    }
+
+    async function fetchSMBData() {
+      const clerk_user_id = user.id;
+
+      const { data: smbData } = await supabase
+        .from('smb_referrals')
+        .select('id, business_name, owner_name, contact_email, contact_phone, business_type, groweasy_tier, city, state')
+        .eq('agent_clerk_user_id', clerk_user_id)
+        .order('referred_at', { ascending: false });
+      setSmbReferrals(smbData || []);
+
+      const { data: ongoingData } = await supabase
+        .from('commissions')
+        .select('*')
+        .eq('clerk_user_id', clerk_user_id)
+        .eq('is_recurring', true)
+        .order('created_at', { ascending: false });
+      setOngoingCommissions(ongoingData || []);
+
+      setLoading(false);
+    }
+
+    fetchSMBData();
+  }, [isLoaded, isSignedIn, user]);
+
+  if (loading) {
+    return (
+      <AgentLayout>
+        <div className="flex h-full items-center justify-center">
+          <p className="text-2xl text-muted-foreground">Loading SMB clients...</p>
+        </div>
+      </AgentLayout>
+    );
+  }
 
   return (
     <AgentLayout>
-    <div className="dark min-h-screen bg-background">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-foreground">SMB Clients</h1>
+          <div className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg">
+            <Building2 className="w-5 h-5 text-primary" />
+            <span className="text-foreground font-semibold">{smbReferrals.length} Active Clients</span>
+          </div>
+        </div>
 
-        <main className="p-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-foreground">SMB Clients</h1>
-            <div className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg">
-              <Building2 className="w-5 h-5 text-primary" />
-              <span className="text-foreground font-semibold">{smbReferrals.length} Active Clients</span>
+        {/* Referred SMB Businesses Table */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-foreground">Referred SMB Businesses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Business Name</TableHead>
+                    <TableHead>Owner</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>GrowEasy Tier</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {smbReferrals.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                        No SMB referrals yet
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    smbReferrals.map((smb) => (
+                      <TableRow key={smb.id}>
+                        <TableCell className="font-medium">{smb.business_name}</TableCell>
+                        <TableCell>{smb.owner_name || '—'}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {smb.contact_email || '—'}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {smb.contact_phone || '—'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{smb.business_type || '—'}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">
+                            {smb.groweasy_tier || 'Basic'}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Ongoing SMB Commissions */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-foreground">Ongoing SMB Commissions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>SMB</TableHead>
+                    <TableHead>GrowEasy Tier</TableHead>
+                    <TableHead className="text-right">Gross</TableHead>
+                    <TableHead className="text-right">Your Share</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {ongoingCommissions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                        No ongoing commissions
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    ongoingCommissions.map((c) => {
+                      // Match SMB to get tier
+                      const matchedSMB = smbReferrals.find(s =>
+                        c.notes?.includes(s.business_name)
+                      );
+
+                      return (
+                        <TableRow key={c.id}>
+                          <TableCell>{format(new Date(c.created_at), 'MM/dd/yy')}</TableCell>
+                          <TableCell>{c.notes?.split(' - ')[0] || 'Unknown SMB'}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">
+                              {matchedSMB?.groweasy_tier || 'Basic'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right text-muted-foreground">
+                            ${(c.gross_commission_cents / 100).toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold text-primary">
+                            ${(c.agent_share_cents / 100).toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={c.status === 'paid' ? 'default' : 'secondary'}>
+                              {c.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Individual SMB Cards — Subtle Hover Border Highlight */}
+        {smbReferrals.length > 0 && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-foreground">Client Details</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {smbReferrals.map((smb) => {
+                const smbCommissions = ongoingCommissions.filter(c =>
+                  c.notes?.includes(smb.business_name)
+                );
+                const lifetimeEarnings = smbCommissions.reduce((sum, c) => sum + c.agent_share_cents, 0) / 100;
+
+                const isPro = smb.groweasy_tier === 'Pro';
+
+                return (
+                  <div
+                    key={smb.id}
+                    className="group"  // For hover trigger
+                  >
+                    <Card className={cn(
+                      "bg-card border-border transition-all duration-300",
+                      "hover:border-primary/70 hover:shadow-lg hover:shadow-primary/10",
+                      isPro && "ring-2 ring-yellow-500/30"
+                    )}>
+                      <CardHeader className={cn(
+                        "py-6",
+                        isPro ? "bg-gradient-to-r from-yellow-500/10 to-amber-500/10" : "bg-gradient-to-r from-primary/10 to-primary/5"
+                      )}>
+                        <div className="flex flex-col items-center justify-center text-center space-y-2">
+                          <CardTitle className="text-foreground text-lg leading-tight">
+                            {smb.business_name}
+                          </CardTitle>
+                          <Badge variant={isPro ? "default" : "secondary"} className={isPro ? "bg-yellow-500 text-yellow-900" : ""}>
+                            {smb.groweasy_tier || 'Basic'}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4 pt-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Owner</p>
+                          <p className="font-medium">{smb.owner_name || '—'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Location</p>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-primary" />
+                            <p>{smb.city || '—'}, {smb.state || '—'}</p>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Contact</p>
+                          {smb.contact_email && (
+                            <div className="flex items-center gap-2">
+                              <Mail className="w-4 h-4 text-muted-foreground" />
+                              <p className="text-sm">{smb.contact_email}</p>
+                            </div>
+                          )}
+                          {smb.contact_phone && (
+                            <div className="flex items-center gap-2 mt-1">
+                              <Phone className="w-4 h-4 text-muted-foreground" />
+                              <p className="text-sm">{smb.contact_phone}</p>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Lifetime Earnings</p>
+                          <p className="text-2xl font-bold text-primary">
+                            ${lifetimeEarnings.toFixed(0)}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                );
+              })}
             </div>
           </div>
-
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-foreground">Referred SMB Businesses</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border hover:bg-transparent">
-                    <TableHead className="text-muted-foreground">Business Name</TableHead>
-                    <TableHead className="text-muted-foreground">Owner</TableHead>
-                    <TableHead className="text-muted-foreground">Contact</TableHead>
-                    <TableHead className="text-muted-foreground">Type</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {smbReferrals.map((smb, idx) => (
-                    <TableRow key={idx} className="border-border">
-                      <TableCell className="text-foreground font-medium">{smb.business}</TableCell>
-                      <TableCell className="text-foreground">{smb.owner}</TableCell>
-                      <TableCell className="text-muted-foreground">{smb.contact}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="secondary"
-                          className={
-                            smb.type === "Enterprise"
-                              ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
-                              : smb.type === "Professional"
-                                ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                                : "bg-gray-500/10 text-gray-400 border-gray-500/20"
-                          }
-                        >
-                          {smb.type}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-foreground">Ongoing SMB Commissions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border hover:bg-transparent">
-                    <TableHead className="text-muted-foreground">Date</TableHead>
-                    <TableHead className="text-muted-foreground">SMB</TableHead>
-                    <TableHead className="text-muted-foreground">Type</TableHead>
-                    <TableHead className="text-muted-foreground text-right">Your Share</TableHead>
-                    <TableHead className="text-muted-foreground">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {smbCommissions.map((item, idx) => (
-                    <TableRow key={idx} className="border-border">
-                      <TableCell className="text-foreground">{item.date}</TableCell>
-                      <TableCell className="text-foreground">{item.smb}</TableCell>
-                      <TableCell className="text-muted-foreground">{item.type}</TableCell>
-                      <TableCell className="text-foreground text-right font-semibold">
-                        ${item.share.toLocaleString()}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={item.status === "Paid" ? "default" : "secondary"}
-                          className={
-                            item.status === "Paid"
-                              ? "bg-green-500/10 text-green-400 border-green-500/20"
-                              : "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
-                          }
-                        >
-                          {item.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </main>
-
-
-      <GamificationBadge rank={12} total={25} tier="Silver" />
-    </div>
+        )}
+      </div>
     </AgentLayout>
-  )
+  );
 }

@@ -12,9 +12,6 @@ export default function SettingsPage() {
           <h1 className="text-3xl font-bold text-foreground">Settings</h1>
           <p className="text-muted-foreground mt-2">Manage your account and preferences</p>
         </main>
-
-
-      <GamificationBadge rank={12} total={25} tier="Silver" />
     </div>
     </AgentLayout>
   )

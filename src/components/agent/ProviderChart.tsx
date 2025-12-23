@@ -1,30 +1,72 @@
-"use client"
+'use client';
 
-import { useState } from "react"
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Cell } from "recharts"
 
-const providerData = [
-  { provider: "Provider A", thisMonth: 4200, lastMonth: 3800, ytd: 48500 },
-  { provider: "Provider B", thisMonth: 3800, lastMonth: 4100, ytd: 52300 },
-  { provider: "Provider C", thisMonth: 2900, lastMonth: 2600, ytd: 38700 },
-  { provider: "Provider D", thisMonth: 3200, lastMonth: 3000, ytd: 41200 },
-  { provider: "Provider E", thisMonth: 2100, lastMonth: 2400, ytd: 28900 },
-]
+type ProviderChartProps = {
+  commissions: any[];
+};
 
-type PeriodType = "thisMonth" | "lastMonth" | "ytd"
+type PeriodType = "thisMonth" | "lastMonth" | "ytd";
 
-const providerColors = ["#00FFFF", "#FFA500", "#A855F7", "#22C55E", "#EC4899"]
+const providerColors = ["#00FFFF", "#FFA500", "#A855F7", "#22C55E", "#EC4899"];
 
-export function ProviderChart() {
-  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>("thisMonth")
+export function ProviderChart({ commissions }: ProviderChartProps) {
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>("thisMonth");
+
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  // Helper to check if a commission falls in a given period
+  const getPeriodValue = (c: any): number => {
+    const date = new Date(c.paid_at || c.created_at);
+    const month = date.getMonth();
+    const year = date.getFullYear();
+
+    if (selectedPeriod === "thisMonth") {
+      return month === currentMonth && year === currentYear && c.status !== 'paid' 
+        ? c.agent_share_cents / 100 
+        : 0;
+    }
+    if (selectedPeriod === "lastMonth") {
+      const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+      const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+      return month === lastMonth && year === lastMonthYear && c.status === 'paid' 
+        ? c.agent_share_cents / 100 
+        : 0;
+    }
+    if (selectedPeriod === "ytd") {
+      return year === currentYear && c.status === 'paid' 
+        ? c.agent_share_cents / 100 
+        : 0;
+    }
+    return 0;
+  };
+
+  // Group by provider and sum for selected period
+  const providerData = commissions.reduce((acc: { provider: string; total: number }[], c: any) => {
+    const existing = acc.find(item => item.provider === c.provider);
+    const value = getPeriodValue(c);
+
+    if (existing) {
+      existing.total += value;
+    } else if (value > 0) {
+      acc.push({ provider: c.provider, total: value });
+    }
+    return acc;
+  }, []);
+
+  // Sort by total descending
+  providerData.sort((a, b) => b.total - a.total);
 
   const periodLabels = {
     thisMonth: "This Month Pending",
     lastMonth: "Last Month Paid",
     ytd: "YTD Paid",
-  }
+  };
 
   return (
     <Card className="bg-card border-border">
@@ -68,8 +110,12 @@ export function ProviderChart() {
                 color: "hsl(var(--popover-foreground))",
               }}
               cursor={{ fill: "rgba(255, 255, 255, 0.05)" }}
+              formatter={(value: number | undefined) => {
+                if (value === undefined) return '$0';
+                return `$${value.toFixed(0)}`;
+              }}
             />
-            <Bar dataKey={selectedPeriod} radius={[4, 4, 0, 0]} name={periodLabels[selectedPeriod]}>
+            <Bar dataKey="total" radius={[4, 4, 0, 0]} name={periodLabels[selectedPeriod]}>
               {providerData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={providerColors[index % providerColors.length]} />
               ))}
@@ -78,5 +124,5 @@ export function ProviderChart() {
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  )
+  );
 }

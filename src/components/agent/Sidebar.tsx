@@ -66,11 +66,11 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
           return (
             <Link key={item.label} href={item.href}>
               <Button
-                variant={isActive ? "secondary" : "ghost"}
+                variant="ghost"
                 className={cn(
-                  "w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent relative",
-                  isActive && "bg-sidebar-accent text-sidebar-accent-foreground",
-                  collapsed && "justify-center",
+                  "w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative transition-all duration-200",
+                  isActive && "bg-primary text-primary-foreground font-bold shadow-md",
+                  collapsed && "justify-center"
                 )}
               >
                 <item.icon className="w-5 h-5 shrink-0" />

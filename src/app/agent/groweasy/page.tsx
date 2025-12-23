@@ -31,13 +31,13 @@ export default function GrowEasyPage() {
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-lg">
-                  <span className="text-sm text-primary font-medium">Launch: Q2 2024</span>
+                  <span className="text-sm text-primary font-medium">Launch: Q1 2026</span>
                 </div>
               </div>
             </CardContent>
           </Card>
         </main>
-      <GamificationBadge rank={12} total={25} tier="Silver" />
+      
     </div>
     </AgentLayout>
   )

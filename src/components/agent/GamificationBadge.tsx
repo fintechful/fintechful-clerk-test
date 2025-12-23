@@ -1,46 +1,32 @@
-import { cn } from "@/lib/utils"
+import { Trophy } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
-interface GamificationBadgeProps {
-  rank: number
-  total: number
-  tier: "Bronze" | "Silver" | "Gold"
-}
+type GamificationBadgeProps = {
+  rank: number;
+  total: number;
+  tier: "Bronze" | "Silver" | "Pro" | "Elite";
+};
+
+const tierConfig = {
+  Bronze: { color: "bg-orange-500/20 text-orange-400 border-orange-500/30", iconColor: "text-orange-400" },
+  Silver: { color: "bg-gray-400/20 text-gray-300 border-gray-400/30", iconColor: "text-gray-300" },
+  Pro: { color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30", iconColor: "text-yellow-400" },
+  Elite: { color: "bg-purple-500/20 text-purple-300 border-purple-500/30", iconColor: "text-purple-300" },
+};
 
 export function GamificationBadge({ rank, total, tier }: GamificationBadgeProps) {
-  const tierColors = {
-    Bronze: "from-amber-700 to-amber-500",
-    Silver: "from-slate-400 to-slate-200",
-    Gold: "from-yellow-500 to-yellow-300",
-  }
-
-  const tierIcons = {
-    Bronze: "🥉",
-    Silver: "🥈",
-    Gold: "🥇",
-  }
+  const config = tierConfig[tier];
 
   return (
-    <div className="fixed bottom-6 right-6 z-40">
-      <div className="bg-card/80 backdrop-blur-sm border border-border rounded-lg p-4 shadow-lg">
-        <div className="flex items-center gap-3">
-          <div
-            className={cn(
-              "w-12 h-12 rounded-full bg-gradient-to-br flex items-center justify-center text-2xl",
-              tierColors[tier],
-            )}
-          >
-            {tierIcons[tier]}
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">Your Rank</div>
-            <div className="text-2xl font-bold text-foreground">
-              #{rank}
-              <span className="text-sm text-muted-foreground">/{total}</span>
-            </div>
-            <div className="text-xs font-medium text-primary">{tier} Tier</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+   <Badge 
+  variant="outline" 
+  className={`px-5 py-1 text-sm font-medium ${config.color} border flex items-center gap-1`}
+>
+  <Trophy className={`w-6 h-6 !w-6 !h-6 mr-2 ${config.iconColor}`} />  {/* Bigger trophy */}
+  <div className="flex flex-col leading-tight">
+    <span className="text-xs text-muted-foreground">Your Rank: #{rank} of {total}</span>
+    <span className="font-bold">{tier}</span>
+  </div>
+</Badge>
+  );
 }
