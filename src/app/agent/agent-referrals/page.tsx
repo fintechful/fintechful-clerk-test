@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { supabase } from '@/lib/supabase';
 import { AgentLayout } from '@/components/agent/AgentLayout';
-import { GamificationBadge } from '@/components/agent/GamificationBadge';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -25,7 +24,7 @@ export default function AgentReferralsPage() {
     }
 
     async function fetchReferralData() {
-      const clerk_user_id = user.id;
+      const clerk_user_id = user!.id;  // Non-null assertion — safe because we already checked !user
 
       // Fetch downline agents
       const { data: downlineAgents } = await supabase
