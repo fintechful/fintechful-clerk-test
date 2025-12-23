@@ -6,7 +6,6 @@ import { supabase } from '@/lib/supabase';
 import { AgentLayout } from '@/components/agent/AgentLayout';
 import { EarningsChart } from '@/components/agent/EarningsChart';
 import { ProviderChart } from '@/components/agent/ProviderChart';
-import { GamificationBadge } from '@/components/agent/GamificationBadge';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -26,7 +25,7 @@ export default function EarningsPage() {
     }
 
     async function fetchAgentCommissions() {
-      const clerk_user_id = user.id;
+      const clerk_user_id = user!.id;  // Non-null assertion — safe because we already checked !user
 
       const { data, error } = await supabase
         .from('commissions')

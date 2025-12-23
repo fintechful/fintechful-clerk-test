@@ -4,13 +4,11 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { supabase } from '@/lib/supabase';
 import { AgentLayout } from '@/components/agent/AgentLayout';
-import { GamificationBadge } from '@/components/agent/GamificationBadge';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Building2, Mail, Phone, MapPin } from "lucide-react";
 import { format } from 'date-fns';
-import { motion } from 'framer-motion'; // npm install framer-motion
 import { cn } from '@/lib/utils';
 
 export default function SMBClientsPage() {
@@ -26,7 +24,7 @@ export default function SMBClientsPage() {
     }
 
     async function fetchSMBData() {
-      const clerk_user_id = user.id;
+      const clerk_user_id = user!.id;  // Non-null assertion — safe because we already checked !user
 
       const { data: smbData } = await supabase
         .from('smb_referrals')
