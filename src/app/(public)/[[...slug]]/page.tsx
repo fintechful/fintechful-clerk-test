@@ -7,26 +7,16 @@ import { SignedIn } from '@clerk/nextjs';
 import { supabase } from '@/lib/supabase';
 import PublicAgentTemplate from '@/components/agent/PublicAgentTemplate'; // your new v0 template
 
-export async function generateMetadata({ params }: { params: { slug?: string[] } }): Promise<Metadata> {
-  // For subdomains, params.slug is undefined (path is /)
-  // We can't get subdomain server-side, so use a generic but strong title
-  return {
-    title: 'FinTechful Agent | Free Leads, Growth Tools & Funding for Your Business',
-    description: 'Connect with a local FinTechful agent for free qualified leads, digital growth bundles, and business funding solutions.',
-    openGraph: {
-      title: 'FinTechful Agent | Business Growth & Funding',
-      description: 'Access free leads, GrowEasy digital tools, and funding through your local FinTechful partner.',
-      images: ['/og-agent-default.jpg'], // Add a default OG image in public/
-      url: 'https://fintechful.com',
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: 'FinTechful Agent',
-      description: 'Free leads and growth tools for your business',
-      images: ['/og-agent-default.jpg'],
-    },
-  }
+export const metadata: Metadata = {
+  title: 'FinTechful Agent | Free Leads, Growth Tools & Funding',
+  description: 'Connect with a local FinTechful agent for free qualified leads, digital growth solutions, and business funding.',
+  openGraph: {
+    title: 'FinTechful Agent',
+    description: 'Free leads and growth tools for your business',
+    images: ['/og-agent-default.jpg'],
+    url: 'https://fintechful.com',
+    type: 'website',
+  },
 }
 
 export default function AgentSite() {
