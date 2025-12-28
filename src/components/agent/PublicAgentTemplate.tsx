@@ -93,6 +93,14 @@ export default function PublicAgentTemplate({ profile }: { profile: Profile }) {
         return () => observer.disconnect()
     }, [])
 
+    useEffect(() => {
+  if (profile?.full_name) {
+    document.title = `${profile.full_name} | FinTechful Agent – Growth, Leads & Funding`
+  } else {
+    document.title = "FinTechful Agent"
+  }
+}, [profile?.full_name])
+
     return (
         <>
             {/* ====================== INLINE HEADER ====================== */}
