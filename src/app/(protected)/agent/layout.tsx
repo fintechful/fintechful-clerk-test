@@ -7,7 +7,7 @@ import {
   SignUpButton,
   UserButton,
 } from '@clerk/nextjs';
-import '@/globals.css';  // main CSS if needed
+import '../../../../globals.css';  // main CSS if needed
 import { Toaster } from 'sonner';
 import { ThemeProvider } from 'next-themes';
 import ClientThemeToggle from '@/components/ClientThemeToggle';
