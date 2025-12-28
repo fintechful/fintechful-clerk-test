@@ -50,6 +50,8 @@ export default function PublicAgentTemplate({ profile }: { profile: Profile }) {
     // Primary color fallback
     const primaryColor = profile.primary_color || "#00A3AD"
 
+
+
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 10)
         window.addEventListener("scroll", handleScroll)

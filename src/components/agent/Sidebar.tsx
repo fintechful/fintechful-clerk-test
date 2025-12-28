@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { ChevronDown } from "lucide-react"
 import {
   LayoutDashboard,
   DollarSign,
@@ -33,8 +34,16 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
     { icon: TrendingUp, label: "GrowEasy", href: "/agent/groweasy", comingSoon: true },
     { icon: BarChart3, label: "Analytics", href: "/agent/analytics", comingSoon: true },
     { icon: FileText, label: "Reports", href: "/agent/reports" },
-    { icon: Settings, label: "Settings", href: "/agent/settings" },
-  ]
+    {
+      icon: Settings,
+      label: "Settings",
+      href: "/agent/settings",
+      subItems: [
+        { label: "Public Profile", href: "/agent/settings/profile" },
+        // Add more settings sub-pages later if needed
+      ],
+    },
+  ];
 
   return (
     <aside className={cn(
@@ -62,28 +71,62 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
 
       <nav className="p-2 space-y-1">
         {menuItems.map((item) => {
-          const isActive = pathname === item.href
+          const isActive = pathname === item.href || (item.subItems && item.subItems.some(sub => pathname === sub.href))
+          const isOpen = item.subItems && item.subItems.some(sub => pathname.startsWith(sub.href))
+
           return (
-            <Link key={item.label} href={item.href}>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative transition-all duration-200",
-                  isActive && "bg-primary text-primary-foreground font-bold shadow-md",
-                  collapsed && "justify-center"
-                )}
-              >
-                <item.icon className="w-5 h-5 shrink-0" />
-                {!collapsed && (
-                  <span className="flex items-center justify-between w-full">
-                    {item.label}
-                    {item.comingSoon && (
-                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Soon</span>
-                    )}
-                  </span>
-                )}
-              </Button>
-            </Link>
+            <div key={item.label} className="space-y-1">
+              <Link href={item.href}>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative transition-all duration-200",
+                    isActive && "bg-primary text-primary-foreground font-bold shadow-md",
+                    collapsed && "justify-center"
+                  )}
+                >
+                  <item.icon className="w-5 h-5 shrink-0" />
+                  {!collapsed && (
+                    <span className="flex items-center justify-between w-full">
+                      <span>{item.label}</span>
+                      <div className="flex items-center gap-2">
+                        {item.comingSoon && (
+                          <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Soon</span>
+                        )}
+                        {item.subItems && (
+                          <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+                        )}
+                      </div>
+                    </span>
+                  )}
+                </Button>
+              </Link>
+
+              {/* Submenu Dropdown */}
+              {item.subItems && !collapsed && (
+                <div className={cn(
+                  "ml-8 space-y-1 overflow-hidden transition-all duration-300",
+                  isOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                )}>
+                  {item.subItems.map((sub) => {
+                    const isSubActive = pathname === sub.href
+                    return (
+                      <Link key={sub.label} href={sub.href}>
+                        <Button
+                          variant="ghost"
+                          className={cn(
+                            "w-full justify-start text-sm text-sidebar-foreground/70 hover:text-sidebar-foreground",
+                            isSubActive && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                          )}
+                        >
+                          <span className="ml-2">{sub.label}</span>
+                        </Button>
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           )
         })}
       </nav>
