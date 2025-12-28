@@ -1,3 +1,4 @@
+// src/app/(protected)/agent/settings/profile/page.tsx
 'use client';
 
 import { useUser } from '@clerk/nextjs';
@@ -22,14 +23,16 @@ export default function ProfileEditor() {
       supabase
         .from('profiles')
         .select('*')
-        .eq('clerk_id', user.id)
+        .eq('clerk_user_id', user.id)  // ← Correct column name
         .single()
         .then(({ data, error }) => {
           if (error) {
             toast.error('Failed to load profile');
-            console.error(error);
-          } else {
+            console.error('Supabase error:', error);
+          } else if (data) {
             setProfile(data);
+          } else {
+            toast.error('Profile not found');
           }
           setLoading(false);
         });
@@ -40,6 +43,7 @@ export default function ProfileEditor() {
     if (!profile || !user) return;
 
     setSaving(true);
+
     const { error } = await supabase
       .from('profiles')
       .update({
@@ -47,28 +51,36 @@ export default function ProfileEditor() {
         bio: profile.bio,
         phone: profile.phone,
         custom_headline: profile.custom_headline || null,
-        primary_color: profile.primary_color,
+        primary_color: profile.primary_color || '#00A3AD',
         show_consumer_section: profile.show_consumer_section,
         show_resources_section: profile.show_resources_section,
       })
-      .eq('clerk_id', user.id);
+      .eq('clerk_user_id', user.id);  // ← Correct column name
 
     setSaving(false);
 
     if (error) {
       toast.error('Failed to save profile');
-      console.error(error);
+      console.error('Save error:', error);
     } else {
       toast.success('Profile updated! Changes are live on your public site.');
     }
   };
 
   if (loading) {
-    return <div className="p-10 text-center">Loading profile...</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-xl">Loading profile...</p>
+      </div>
+    );
   }
 
   if (!profile) {
-    return <div className="p-10 text-center text-red-600">Profile not found</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-xl text-red-600">Unable to load profile. Please contact support.</p>
+      </div>
+    );
   }
 
   return (
@@ -156,6 +168,7 @@ export default function ProfileEditor() {
             <Button onClick={handleSave} disabled={saving} className="bg-teal-600 hover:bg-teal-700">
               {saving ? 'Saving...' : 'Save Changes'}
             </Button>
+
             <Button
               variant="outline"
               onClick={() => window.open(`https://${profile.subdomain}.fintechful.com`, '_blank')}
