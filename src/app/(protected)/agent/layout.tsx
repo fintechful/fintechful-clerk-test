@@ -6,8 +6,9 @@ import {
   SignInButton,
   SignUpButton,
   UserButton,
+  RedirectToSignIn,
 } from '@clerk/nextjs';
-import '../../globals.css';  // main CSS if needed
+import '../../globals.css';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from 'next-themes';
 import ClientThemeToggle from '@/components/ClientThemeToggle';
@@ -40,7 +41,16 @@ export default function ProtectedLayout({
                 </div>
               </SignedIn>
             </header>
-            <main className="p-10">{children}</main>
+
+            {/* This blocks all dashboard content if not signed in */}
+            <SignedIn>
+              <main className="p-10">{children}</main>
+            </SignedIn>
+
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+
             <Toaster position="top-center" richColors closeButton />
           </ThemeProvider>
         </body>
