@@ -1,15 +1,14 @@
+// src/components/agent/Sidebar.tsx
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import {
   LayoutDashboard,
   DollarSign,
   Users,
   FileText,
   Settings,
-  ChevronLeft,
-  ChevronRight,
   Building2,
   TrendingUp,
   BarChart3,
@@ -17,6 +16,7 @@ import {
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"  // ← Import useState here
 
 interface SidebarProps {
   collapsed: boolean
@@ -25,6 +25,9 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
   const pathname = usePathname()
+
+  // Single state for open submenu (only Settings has one)
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
 
   const menuItems = [
     { icon: LayoutDashboard, label: "Overview", href: "/agent/dashboard" },
@@ -40,7 +43,6 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
       href: "/agent/settings",
       subItems: [
         { label: "Public Profile", href: "/agent/settings/profile" },
-        // Add more settings sub-pages later if needed
       ],
     },
   ];
@@ -69,16 +71,21 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
         </Button>
       </div>
 
-      <nav className="p-2 space-y-1">
+      <nav className="p-2 space-y-1 flex-1 overflow-y-auto">
         {menuItems.map((item) => {
-          const isActive = pathname === item.href || (item.subItems && item.subItems.some(sub => pathname === sub.href))
+          const isActive = pathname === item.href || 
+            (item.subItems && item.subItems.some(sub => pathname === sub.href))
           const hasSubItems = !!item.subItems
-          const [isOpen, setIsOpen] = useState(isActive) // Open if active sub-item
+          const isOpen = openSubmenu === item.label
 
           return (
             <div key={item.label} className="space-y-1">
               <button
-                onClick={() => hasSubItems && setIsOpen(!isOpen)}
+                onClick={() => {
+                  if (hasSubItems) {
+                    setOpenSubmenu(isOpen ? null : item.label)
+                  }
+                }}
                 className={cn(
                   "w-full flex items-center justify-start gap-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200",
                   isActive && "bg-primary text-primary-foreground font-bold shadow-md",
@@ -94,23 +101,20 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
                         <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Soon</span>
                       )}
                       {hasSubItems && (
-                        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+                        <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
                       )}
                     </div>
                   </span>
                 )}
               </button>
 
-              {/* Submenu Dropdown */}
-              {hasSubItems && !collapsed && (
-                <div className={cn(
-                  "ml-8 space-y-1 overflow-hidden transition-all duration-300 ease-in-out",
-                  isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                )}>
+              {/* Submenu */}
+              {hasSubItems && !collapsed && isOpen && (
+                <div className="ml-8 space-y-1">
                   {item.subItems.map((sub) => {
                     const isSubActive = pathname === sub.href
                     return (
-                      <Link key={sub.label} href={sub.href}>
+                      <Link key={sub.href} href={sub.href}>
                         <Button
                           variant="ghost"
                           className={cn(
