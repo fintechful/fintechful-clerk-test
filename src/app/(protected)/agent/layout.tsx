@@ -1,4 +1,4 @@
-// src/app/(protected)/layout.tsx
+// src/app/(protected)/agent/layout.tsx
 import {
   ClerkProvider,
   SignedIn,
