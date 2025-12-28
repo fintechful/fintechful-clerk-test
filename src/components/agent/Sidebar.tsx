@@ -72,41 +72,40 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
       <nav className="p-2 space-y-1">
         {menuItems.map((item) => {
           const isActive = pathname === item.href || (item.subItems && item.subItems.some(sub => pathname === sub.href))
-          const isOpen = item.subItems && item.subItems.some(sub => pathname.startsWith(sub.href))
+          const hasSubItems = !!item.subItems
+          const [isOpen, setIsOpen] = useState(isActive) // Open if active sub-item
 
           return (
             <div key={item.label} className="space-y-1">
-              <Link href={item.href}>
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative transition-all duration-200",
-                    isActive && "bg-primary text-primary-foreground font-bold shadow-md",
-                    collapsed && "justify-center"
-                  )}
-                >
-                  <item.icon className="w-5 h-5 shrink-0" />
-                  {!collapsed && (
-                    <span className="flex items-center justify-between w-full">
-                      <span>{item.label}</span>
-                      <div className="flex items-center gap-2">
-                        {item.comingSoon && (
-                          <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Soon</span>
-                        )}
-                        {item.subItems && (
-                          <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
-                        )}
-                      </div>
-                    </span>
-                  )}
-                </Button>
-              </Link>
+              <button
+                onClick={() => hasSubItems && setIsOpen(!isOpen)}
+                className={cn(
+                  "w-full flex items-center justify-start gap-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200",
+                  isActive && "bg-primary text-primary-foreground font-bold shadow-md",
+                  collapsed && "justify-center"
+                )}
+              >
+                <item.icon className="w-5 h-5 shrink-0" />
+                {!collapsed && (
+                  <span className="flex items-center justify-between w-full">
+                    <span>{item.label}</span>
+                    <div className="flex items-center gap-2">
+                      {item.comingSoon && (
+                        <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Soon</span>
+                      )}
+                      {hasSubItems && (
+                        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+                      )}
+                    </div>
+                  </span>
+                )}
+              </button>
 
               {/* Submenu Dropdown */}
-              {item.subItems && !collapsed && (
+              {hasSubItems && !collapsed && (
                 <div className={cn(
-                  "ml-8 space-y-1 overflow-hidden transition-all duration-300",
-                  isOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                  "ml-8 space-y-1 overflow-hidden transition-all duration-300 ease-in-out",
+                  isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                 )}>
                   {item.subItems.map((sub) => {
                     const isSubActive = pathname === sub.href
