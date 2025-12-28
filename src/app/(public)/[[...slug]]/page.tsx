@@ -1,23 +1,10 @@
 // src/app/[[...slug]]/page.tsx
 'use client';
 
-import { Metadata } from 'next'
 import { useEffect, useState } from 'react';
 import { SignedIn } from '@clerk/nextjs';
 import { supabase } from '@/lib/supabase';
 import PublicAgentTemplate from '@/components/agent/PublicAgentTemplate'; // your new v0 template
-
-export const metadata: Metadata = {
-  title: 'FinTechful Agent | Free Leads, Growth Tools & Funding',
-  description: 'Connect with a local FinTechful agent for free qualified leads, digital growth solutions, and business funding.',
-  openGraph: {
-    title: 'FinTechful Agent',
-    description: 'Free leads and growth tools for your business',
-    images: ['/og-agent-default.jpg'],
-    url: 'https://fintechful.com',
-    type: 'website',
-  },
-}
 
 export default function AgentSite() {
   const [profile, setProfile] = useState<any>(null);
