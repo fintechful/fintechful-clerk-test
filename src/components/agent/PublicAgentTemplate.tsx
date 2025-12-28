@@ -21,7 +21,7 @@ import {
     Facebook,
 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
-import '../../app/[[...slug]]/agent-css.css'
+import '@/styles/agent-css.css'
 
 type Profile = {
     full_name: string

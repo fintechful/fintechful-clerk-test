@@ -1,6 +1,6 @@
 // src/app/[[...slug]]/layout.tsx
 import type { ReactNode } from 'react'
-import '../../app/[[...slug]]/agent-css.css' // Your v0 agent CSS
+import '@/styles/agent-css.css' // v0 agent CSS
 import { Inter, Poppins } from 'next/font/google'
 
 const inter = Inter({ 
