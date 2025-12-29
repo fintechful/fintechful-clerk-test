@@ -96,12 +96,12 @@ export default function PublicAgentTemplate({ profile }: { profile: Profile }) {
     }, [])
 
     useEffect(() => {
-  if (profile?.full_name) {
-    document.title = `${profile.full_name} | FinTechful Agent – Growth, Leads & Funding`
-  } else {
-    document.title = "FinTechful Agent"
-  }
-}, [profile?.full_name])
+        if (profile?.full_name) {
+            document.title = `${profile.full_name} | FinTechful Agent – Growth, Leads & Funding`
+        } else {
+            document.title = "FinTechful Agent"
+        }
+    }, [profile?.full_name])
 
     return (
         <>
@@ -630,14 +630,7 @@ export default function PublicAgentTemplate({ profile }: { profile: Profile }) {
                     </div>
                 </div>
             </section>
-            {/* Just replace any remaining static name/photo with profile props */}
 
-            {/* Final CTA with custom CTA text if provided */}
-            <section ref={finalCtaRef} className="...">
-                <Button style={{ backgroundColor: primaryColor }}>
-                    {profile.custom_cta_text || "Book Your Free Strategy Call"}
-                </Button>
-            </section>
 
             {/* Conditional sections */}
 
